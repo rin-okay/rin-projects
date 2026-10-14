@@ -1,0 +1,184 @@
+/* Full Gallery Preview dock
+   Half/full-width gallery preview with clickable main image and a selecting thumbnail strip.
+*/
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-dock-content {
+    gap: 6px;
+    min-width: 0;
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-root {
+    width: 100%;
+    min-width: 0;
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-main {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 190px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+
+    border-width: var(--button-border-width, 1px);
+    border-style: solid;
+    border-color: var(--button-secondary-border-color, var(--border-color-primary, currentColor));
+    border-radius: var(--radius-md, 4px);
+    background: var(--background-fill-primary, transparent);
+    box-shadow: none;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-main:hover,
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-main:focus {
+    border-color: var(--input-border-color-focus, var(--border-color-accent, currentColor));
+    outline: none;
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: var(--background-fill-primary, transparent);
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    text-align: center;
+    color: var(--body-text-color-subdued, var(--body-text-color, inherit));
+    font: inherit;
+    font-size: 12px;
+    background: var(--background-fill-primary, transparent);
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-empty[hidden] {
+    display: none !important;
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-strip {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    min-width: 0;
+    height: 34px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+
+    border-width: var(--button-border-width, 1px);
+    border-style: solid;
+    border-color: var(--button-secondary-border-color, var(--border-color-primary, currentColor));
+    border-radius: var(--radius-md, 4px);
+    background: var(--button-secondary-background-fill, var(--background-fill-secondary, transparent));
+    box-shadow: none;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-thumb:hover,
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-thumb:focus {
+    border-color: var(--input-border-color-focus, var(--border-color-accent, currentColor));
+    outline: none;
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-thumb[data-selected="true"] {
+    border-color: var(--input-border-color-focus, var(--border-color-accent, currentColor));
+    box-shadow: 0 0 0 1px var(--input-border-color-focus, var(--border-color-accent, currentColor));
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-thumb-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    background: var(--background-fill-primary, transparent);
+}
+
+/* Manual gallery grab / refresh fallback. It sits in the bottom-right corner
+   without increasing dock height; the strip reserves enough room for it. */
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-root {
+    position: relative;
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-strip {
+    box-sizing: border-box;
+    padding-right: 37px;
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-grab {
+    appearance: none;
+    -webkit-appearance: none;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+    border-width: var(--button-border-width, 1px);
+    border-style: solid;
+    border-color: var(--button-secondary-border-color, var(--border-color-primary, currentColor));
+    border-radius: var(--button-secondary-border-radius, var(--radius-md, 4px));
+    background: var(--button-secondary-background-fill, var(--background-fill-secondary, transparent));
+    color: var(--button-secondary-text-color, var(--body-text-color, inherit));
+    box-shadow: var(--button-secondary-shadow, none);
+
+    font: inherit;
+    font-size: 19px;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-grab:hover,
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-grab:focus {
+    background: var(--button-secondary-background-fill-hover, var(--button-secondary-background-fill, transparent));
+    color: var(--button-secondary-text-color-hover, var(--button-secondary-text-color, inherit));
+    border-color: var(--input-border-color-focus, var(--border-color-accent, currentColor));
+    outline: none;
+}
+
+.fdm-dock-shell[data-dock-id="full-gallery-preview"] .fdm-full-gallery-preview-grab[data-refreshing="true"] {
+    animation: fdm-gallery-preview-spin 0.65s linear infinite;
+}
+
+@keyframes fdm-gallery-preview-spin {
+    to { transform: rotate(360deg); }
+}

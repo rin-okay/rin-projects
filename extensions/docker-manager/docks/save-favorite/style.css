@@ -1,0 +1,78 @@
+/* Save / Favorite Dock v2
+   Shrink-wrapped geometry: the shell only surrounds the native-style Save
+   button plus the Dock Manager handle and a small amount of padding. */
+
+.fdm-dock-shell[data-dock-id="save-favorite"] {
+    width: max-content !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    padding: 4px 5px 5px !important;
+    --fdm-gap: 4px;
+    --fdm-content-gap: 0px;
+}
+
+.fdm-dock-shell[data-dock-id="save-favorite"] .fdm-dock-handle {
+    width: 100%;
+    min-width: 44px;
+    height: 12px;
+    flex-basis: 12px;
+}
+
+.fdm-dock-shell[data-dock-id="save-favorite"] .fdm-dock-handle::before {
+    width: 28px;
+}
+
+.fdm-dock-shell[data-dock-id="save-favorite"] .fdm-dock-content {
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    flex: 0 0 auto;
+    gap: 0;
+}
+
+.fdm-dock-shell[data-dock-id="save-favorite"] .fdm-save-favorite-button {
+    width: auto;
+    height: auto;
+    min-width: 44px;
+    min-height: 44px;
+    margin: 0;
+    box-sizing: border-box;
+    font-size: 20px;
+    line-height: 1;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* The normal state intentionally inherits the classes copied from Forge's real
+   Save ToolButton. Only the short success state overrides its colors. */
+.fdm-dock-shell[data-dock-id="save-favorite"] .fdm-save-favorite-button[data-success="true"] {
+    background: var(--button-primary-background-fill, var(--border-color-accent, currentColor)) !important;
+    border-color: var(--button-primary-border-color, var(--border-color-accent, currentColor)) !important;
+    color: var(--button-primary-text-color, #fff) !important;
+    opacity: 1 !important;
+    transform: scale(1.04);
+    transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.fdm-dock-shell[data-dock-id="save-favorite"] .fdm-save-favorite-button[data-pending="true"] {
+    opacity: 1 !important;
+    animation: fdm-save-favorite-spin 0.65s linear infinite;
+}
+
+@keyframes fdm-save-favorite-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fdm-dock-shell[data-dock-id="save-favorite"] .fdm-save-favorite-button[data-success="true"] {
+        transform: none;
+        transition: none;
+    }
+
+    .fdm-dock-shell[data-dock-id="save-favorite"] .fdm-save-favorite-button[data-pending="true"] {
+        animation: none;
+    }
+}

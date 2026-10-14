@@ -1,0 +1,124 @@
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-main,
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-nav {
+    display: flex;
+    width: 100%;
+    gap: var(--fdm-gap, 7px);
+}
+
+.fdm-dock-shell[data-dock-id="generate"] button {
+    min-width: 0;
+    min-height: 44px;
+    margin: 0;
+    padding: 8px 10px;
+    box-sizing: border-box;
+
+    border-width: var(--button-border-width, 1px);
+    border-style: solid;
+    border-radius: var(--button-secondary-border-radius, var(--radius-md, 4px));
+    box-shadow: var(--button-secondary-shadow, none);
+
+    font: inherit;
+    font-size: var(--button-medium-text-size, 14px);
+    font-weight: var(--button-medium-text-weight, 600);
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.fdm-dock-shell[data-dock-id="generate"] button:disabled {
+    cursor: default;
+    opacity: 0.62;
+}
+
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-primary {
+    flex: 3 1 0;
+    background: var(--button-primary-background-fill);
+    color: var(--button-primary-text-color);
+    border-color: var(--button-primary-border-color);
+    border-radius: var(--button-primary-border-radius, var(--radius-md, 4px));
+    box-shadow: var(--button-primary-shadow, none);
+}
+
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-secondary,
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-nav-button {
+    background: var(--button-secondary-background-fill);
+    color: var(--button-secondary-text-color);
+    border-color: var(--button-secondary-border-color);
+}
+
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-secondary {
+    flex: 1 1 0;
+    font-size: 20px;
+}
+
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-nav-button {
+    flex: 1 1 50%;
+    font-size: 20px;
+}
+
+.fdm-dock-shell[data-dock-id="generate"][data-state="running"] .fdm-generate-primary,
+.fdm-dock-shell[data-dock-id="generate"][data-state="stopping"] .fdm-generate-primary,
+.fdm-dock-shell[data-dock-id="generate"][data-state="running"] .fdm-generate-secondary,
+.fdm-dock-shell[data-dock-id="generate"][data-state="stopping"] .fdm-generate-secondary {
+    flex: 1 1 0;
+    font-size: var(--button-medium-text-size, 14px);
+    background: var(--button-secondary-background-fill);
+    color: var(--button-secondary-text-color);
+    border-color: var(--button-secondary-border-color);
+    border-radius: var(--button-secondary-border-radius, var(--radius-md, 4px));
+    box-shadow: var(--button-secondary-shadow, none);
+}
+
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-primary:hover:not(:disabled) {
+    background: var(--button-primary-background-fill-hover, var(--button-primary-background-fill));
+    color: var(--button-primary-text-color-hover, var(--button-primary-text-color));
+    border-color: var(--button-primary-border-color-hover, var(--button-primary-border-color));
+}
+
+.fdm-dock-shell[data-dock-id="generate"][data-state="running"] .fdm-generate-primary:hover:not(:disabled),
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-secondary:hover:not(:disabled),
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-nav-button:hover:not(:disabled) {
+    background: var(--button-secondary-background-fill-hover, var(--button-secondary-background-fill));
+    color: var(--button-secondary-text-color-hover, var(--button-secondary-text-color));
+    border-color: var(--button-secondary-border-color-hover, var(--button-secondary-border-color));
+}
+
+
+/* Full-width Generate Dock uses a distinct layout:
+   Generate/Stop takes the left half, while ✨/Skip, ↑, and ↓ share the right half. */
+.fdm-dock-shell[data-dock-id="generate"][data-width="full"] .fdm-dock-content {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr 1fr;
+    align-items: stretch;
+}
+
+.fdm-dock-shell[data-dock-id="generate"][data-width="full"] .fdm-generate-main,
+.fdm-dock-shell[data-dock-id="generate"][data-width="full"] .fdm-generate-nav {
+    display: contents;
+    width: auto;
+}
+
+.fdm-dock-shell[data-dock-id="generate"][data-width="full"] .fdm-generate-primary,
+.fdm-dock-shell[data-dock-id="generate"][data-width="full"] .fdm-generate-secondary,
+.fdm-dock-shell[data-dock-id="generate"][data-width="full"] .fdm-generate-nav-button {
+    min-width: 0;
+}
+
+.fdm-dock-shell[data-dock-id="generate"][data-width="full"] .fdm-generate-primary {
+    grid-column: 1;
+    flex: 0 0 auto;
+}
+
+.fdm-dock-shell[data-dock-id="generate"][data-width="full"] .fdm-generate-secondary {
+    grid-column: 2;
+    flex: 0 0 auto;
+}
+
+.fdm-dock-shell[data-dock-id="generate"][data-width="full"] .fdm-generate-nav .fdm-generate-nav-button:first-child {
+    grid-column: 3;
+}
+
+.fdm-dock-shell[data-dock-id="generate"][data-width="full"] .fdm-generate-nav .fdm-generate-nav-button:last-child {
+    grid-column: 4;
+}

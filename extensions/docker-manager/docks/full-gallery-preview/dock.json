@@ -1,0 +1,16 @@
+{
+  "id": "full-gallery-preview",
+  "name": "Full Gallery Preview",
+  "version": 3,
+  "default_width": "half",
+  "allowed_widths": [
+    "half",
+    "full"
+  ],
+  "tabs": [
+    "txt2img",
+    "img2img"
+  ],
+  "script": "dock.js",
+  "style": "style.css"
+}

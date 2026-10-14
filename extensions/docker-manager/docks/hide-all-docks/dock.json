@@ -1,0 +1,10 @@
+{
+  "id": "hide-all-docks",
+  "name": "Hide / Restore Docks",
+  "version": 1,
+  "default_width": "half",
+  "allowed_widths": ["half"],
+  "tabs": ["txt2img", "img2img"],
+  "script": "dock.js",
+  "style": "style.css"
+}

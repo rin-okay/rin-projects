@@ -1,0 +1,684 @@
+/*
+ * Rin Neon — Default
+ *
+ * Forge Neo / Gradio Default structure with a restrained palette taken from
+ * the supplied artwork. This stylesheet intentionally avoids glass panels,
+ * gradients, glow, large radii, decorative backgrounds and heavy outlines.
+ */
+
+:root {
+    --rin-ink: #0d0b0c;
+    --rin-ink-soft: #151116;
+    --rin-plum-0: #1b131d;
+    --rin-plum-1: #211525;
+    --rin-plum-2: #2d1e2e;
+    --rin-violet: #5d3269;
+    --rin-orchid: #9356a0;
+    --rin-magenta: #b665b5;
+    --rin-pink: #cc7cc6;
+    --rin-lavender: #c69af1;
+    --rin-blush: #f4cae9;
+    --rin-warm: #805157;
+    --rin-text: #f2e8f0;
+    --rin-muted: #aa98a8;
+    --rin-border: #3b2a3f;
+    --rin-border-soft: #322335;
+}
+
+/* Keep both browser modes visually identical. Gradio's regular Default theme
+   still controls spacing, typography, sizing and general component structure. */
+.gradio-container,
+.dark .gradio-container {
+    --body-background-fill: var(--rin-ink) !important;
+    --body-text-color: var(--rin-text) !important;
+    --body-text-color-dark: var(--rin-text) !important;
+    --body-text-color-subdued: var(--rin-muted) !important;
+    --body-text-color-subdued-dark: var(--rin-muted) !important;
+
+    --background-fill-primary: var(--rin-ink-soft) !important;
+    --background-fill-primary-dark: var(--rin-ink-soft) !important;
+    --background-fill-secondary: var(--rin-plum-0) !important;
+    --background-fill-secondary-dark: var(--rin-plum-0) !important;
+
+    --block-background-fill: #171218 !important;
+    --block-background-fill-dark: #171218 !important;
+    --block-border-color: var(--rin-border) !important;
+    --block-border-color-dark: var(--rin-border) !important;
+    --border-color-primary: var(--rin-border) !important;
+    --border-color-primary-dark: var(--rin-border) !important;
+    --border-color-accent: var(--rin-border) !important;
+    --border-color-accent-dark: var(--rin-border) !important;
+    --block-label-background-fill: #211725 !important;
+    --block-label-background-fill-dark: #211725 !important;
+    --block-label-text-color: #cdb9ca !important;
+    --block-label-text-color-dark: #cdb9ca !important;
+    --block-title-text-color: var(--rin-text) !important;
+    --block-title-text-color-dark: var(--rin-text) !important;
+
+    --input-background-fill: #100d11 !important;
+    --input-background-fill-dark: #100d11 !important;
+    --input-border-color: #3b2a3f !important;
+    --input-border-color-dark: #3b2a3f !important;
+    --input-border-color-focus: #805187 !important;
+    --input-border-color-focus-dark: #805187 !important;
+    --input-placeholder-color: #806f80 !important;
+    --input-placeholder-color-dark: #806f80 !important;
+
+    --button-primary-background-fill: var(--rin-orchid) !important;
+    --button-primary-background-fill-dark: var(--rin-orchid) !important;
+    --button-primary-background-fill-hover: #a864b2 !important;
+    --button-primary-background-fill-hover-dark: #a864b2 !important;
+    --button-primary-border-color: var(--rin-orchid) !important;
+    --button-primary-border-color-dark: var(--rin-orchid) !important;
+    --button-primary-text-color: #fff4fc !important;
+    --button-primary-text-color-dark: #fff4fc !important;
+
+    --button-secondary-background-fill: #211725 !important;
+    --button-secondary-background-fill-dark: #211725 !important;
+    --button-secondary-background-fill-hover: var(--rin-plum-2) !important;
+    --button-secondary-background-fill-hover-dark: var(--rin-plum-2) !important;
+    --button-secondary-border-color: #3b2a3f !important;
+    --button-secondary-border-color-dark: #3b2a3f !important;
+    --button-secondary-text-color: #ddcdda !important;
+    --button-secondary-text-color-dark: #ddcdda !important;
+
+    --slider-color: var(--rin-magenta) !important;
+    --slider-color-dark: var(--rin-magenta) !important;
+    --checkbox-background-color-selected: var(--rin-orchid) !important;
+    --checkbox-background-color-selected-dark: var(--rin-orchid) !important;
+    --checkbox-border-color-selected: var(--rin-orchid) !important;
+    --checkbox-border-color-selected-dark: var(--rin-orchid) !important;
+    --loader-color: var(--rin-magenta) !important;
+
+    /* Flatten Gradio's visual language without changing its layout. */
+    --radius-sm: 0px !important;
+    --radius-md: 0px !important;
+    --radius-lg: 0px !important;
+    --radius-xl: 0px !important;
+    --radius-xxl: 0px !important;
+
+    color: var(--rin-text) !important;
+    background: var(--rin-ink) !important;
+    min-height: 100vh;
+}
+
+body {
+    background: var(--rin-ink) !important;
+}
+
+/* Forge/Gradio sometimes applies explicit radii rather than variables. Keep
+   ordinary interface surfaces square while leaving circular iconography alone. */
+.gradio-container button,
+.gradio-container input,
+.gradio-container textarea,
+.gradio-container select,
+.gradio-container .block,
+.gradio-container .panel,
+.gradio-container .gradio-box,
+.gradio-container .gradio-group,
+.gradio-container .gradio-accordion,
+.gradio-container .tab-nav,
+.gradio-container .tab-nav button,
+.gradio-container .gallery .thumbnail-item,
+.extra-network-pane .card,
+.extra-networks .card,
+#forge-mobile-dock {
+    border-radius: 0 !important;
+}
+
+/* Tabs: very close to default behavior, with color rather than a boxed/glowing
+   active state. */
+#tabs > .tab-nav,
+#txt2img_extra_tabs > .tab-nav,
+#img2img_extra_tabs > .tab-nav {
+    background: var(--rin-ink-soft) !important;
+    border-color: var(--rin-border-soft) !important;
+    box-shadow: none !important;
+}
+
+#tabs > .tab-nav button,
+#txt2img_extra_tabs > .tab-nav button,
+#img2img_extra_tabs > .tab-nav button {
+    color: #b9a7b7 !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+#tabs > .tab-nav button:hover,
+#txt2img_extra_tabs > .tab-nav button:hover,
+#img2img_extra_tabs > .tab-nav button:hover {
+    color: #e2d1df !important;
+    background: #1d161f !important;
+}
+
+#tabs > .tab-nav button.selected,
+#txt2img_extra_tabs > .tab-nav button.selected,
+#img2img_extra_tabs > .tab-nav button.selected {
+    color: var(--rin-blush) !important;
+    background: #211725 !important;
+    border-color: transparent !important;
+    box-shadow: inset 0 -2px 0 #805187 !important;
+}
+
+/* Panels and accordions stay flat. */
+.gradio-container .panel,
+.gradio-container .gradio-group,
+.gradio-container .gradio-accordion,
+.gradio-container .gradio-box,
+.gradio-container .block {
+    border-color: var(--rin-border) !important;
+    box-shadow: none !important;
+}
+
+.gradio-container .gradio-accordion {
+    background: #171218 !important;
+}
+
+.gradio-container .gradio-accordion:hover {
+    border-color: #513556 !important;
+}
+
+/* Prompt/input treatment: quiet dark fields, simple violet focus line. */
+#txt2img_prompt textarea,
+#txt2img_neg_prompt textarea,
+#img2img_prompt textarea,
+#img2img_neg_prompt textarea,
+.gradio-container textarea,
+.gradio-container input,
+.gradio-container select {
+    background: #100d11 !important;
+    color: #f4eaf2 !important;
+    box-shadow: none !important;
+}
+
+#txt2img_prompt textarea,
+#txt2img_neg_prompt textarea,
+#img2img_prompt textarea,
+#img2img_neg_prompt textarea,
+.gradio-container textarea {
+    caret-color: var(--rin-pink) !important;
+}
+
+.gradio-container textarea:focus,
+.gradio-container input:focus,
+.gradio-container select:focus {
+    border-color: #805187 !important;
+    box-shadow: 0 0 0 1px rgba(128, 81, 135, 0.22) !important;
+    outline: none !important;
+}
+
+/* Generate remains easy to spot, but is a flat solid accent rather than a
+   gradient/glowing hero control. */
+#txt2img_generate,
+#img2img_generate {
+    color: #fff4fc !important;
+    font-weight: 650 !important;
+    background: var(--rin-orchid) !important;
+    border-color: var(--rin-orchid) !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+#txt2img_generate:hover,
+#img2img_generate:hover {
+    background: #a864b2 !important;
+    border-color: #a864b2 !important;
+    filter: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+#txt2img_interrupt,
+#img2img_interrupt,
+#txt2img_skip,
+#img2img_skip {
+    background: #4d303d !important;
+    border-color: #65404f !important;
+    color: #f3dfe7 !important;
+    box-shadow: none !important;
+}
+
+.gradio-container button:not(#txt2img_generate):not(#img2img_generate),
+.gradio-container .tool {
+    box-shadow: none !important;
+}
+
+.gradio-container button:not(#txt2img_generate):not(#img2img_generate):hover,
+.gradio-container .tool:hover {
+    border-color: #513556 !important;
+    box-shadow: none !important;
+}
+
+/* Sliders retain their normal geometry. Only the accent color changes. */
+.gradio-container input[type="range"] {
+    accent-color: var(--rin-magenta) !important;
+}
+
+.gradio-container input[type="range"]::-webkit-slider-thumb {
+    border-radius: 999px !important;
+    box-shadow: none !important;
+}
+
+/* Keep native circular radio controls circular where the browser exposes them. */
+.gradio-container input[type="radio"] {
+    border-radius: 999px !important;
+}
+
+/* Extra Networks: default card behavior, palette only. */
+.extra-network-pane .card,
+.extra-networks .card {
+    border: 1px solid var(--rin-border) !important;
+    background-color: #171218 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.extra-network-pane .card:hover,
+.extra-networks .card:hover {
+    border-color: #604066 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.extra-network-pane .card .name,
+.extra-networks .card .name {
+    color: #eee1eb !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+}
+
+/* Gallery selection is visible without a glow ring. */
+.gradio-container .gallery .thumbnail-item,
+.gradio-container .gallery button {
+    border-color: var(--rin-border) !important;
+}
+
+.gradio-container .gallery .thumbnail-item.selected,
+.gradio-container .gallery button.selected {
+    border-color: #9356a0 !important;
+    box-shadow: none !important;
+}
+
+/* Progress is a single subdued accent. */
+.gradio-container .progress-level,
+.gradio-container .progress-bar > div {
+    background: var(--rin-magenta) !important;
+}
+
+/* Simple scrollbar, no gradient pill styling. */
+.gradio-container,
+.gradio-container * {
+    scrollbar-color: #5d3b62 #151116;
+}
+
+.gradio-container *::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+
+.gradio-container *::-webkit-scrollbar-track {
+    background: #151116;
+}
+
+.gradio-container *::-webkit-scrollbar-thumb {
+    background: #5d3b62;
+    border: 2px solid #151116;
+    border-radius: 0 !important;
+}
+
+.gradio-container *::-webkit-scrollbar-thumb:hover {
+    background: #75477b;
+}
+
+.gradio-container a {
+    color: #c783c0 !important;
+}
+
+.gradio-container a:hover {
+    color: var(--rin-blush) !important;
+}
+
+#footer {
+    opacity: 0.7;
+}
+
+/* Match forge-mobile-ui without turning it into a glass card. */
+#forge-mobile-dock {
+    border: 1px solid #453149 !important;
+    background: #171218 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+}
+
+#forge-mobile-dock button {
+    color: #e9dce6 !important;
+    border-color: var(--rin-border) !important;
+    background: #211725 !important;
+    box-shadow: none !important;
+}
+
+#forge-mobile-dock button:hover,
+#forge-mobile-dock button:active {
+    background: var(--rin-plum-2) !important;
+}
+
+#forge-mobile-dock .forge-mobile-dock-generate,
+#forge-mobile-dock [data-action="generate"] {
+    color: #fff4fc !important;
+    background: var(--rin-orchid) !important;
+    border-color: var(--rin-orchid) !important;
+}
+
+#forge-mobile-dock .forge-mobile-dock-generate:hover,
+#forge-mobile-dock .forge-mobile-dock-generate:active,
+#forge-mobile-dock [data-action="generate"]:hover,
+#forge-mobile-dock [data-action="generate"]:active {
+    color: #fff4fc !important;
+    background: #a864b2 !important;
+    border-color: #a864b2 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gradio-container *,
+    .gradio-container *::before,
+    .gradio-container *::after {
+        transition-duration: 0.001ms !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+/* Checkbox selected state
+   Gradio 4.40 can retain its native/custom transparent checkbox face even when
+   the selected border token changes. Force the checked control itself to use
+   the theme accent as a solid fill. */
+.gradio-container input[type="checkbox"] {
+    accent-color: var(--rin-orchid) !important;
+}
+
+.gradio-container input[type="checkbox"]:checked {
+    background: var(--rin-orchid) !important;
+    background-color: var(--rin-orchid) !important;
+    background-image: none !important;
+    border-color: var(--rin-orchid) !important;
+    color: #fff4fc !important;
+}
+
+/* Covers Gradio/custom checkbox wrappers that expose ARIA state instead of
+   relying solely on the native input paint. */
+.gradio-container [role="checkbox"][aria-checked="true"] {
+    background: var(--rin-orchid) !important;
+    background-color: var(--rin-orchid) !important;
+    background-image: none !important;
+    border-color: var(--rin-orchid) !important;
+    color: #fff4fc !important;
+}
+
+/* Gallery + Forge VAE selector color cleanup
+   Forge gives the Gallery its own fill and the VAE/Text Encoder control is a
+   Gradio multiselect whose selected values are rendered as .token elements.
+   Target both directly so Gradio's default blue/slate accents cannot leak in. */
+
+/* Gallery body: use the same near-black input surface as prompt fields. */
+.gradio-container .block.gradio-gallery,
+.gradio-container .gradio-gallery,
+#txt2img_gallery,
+#img2img_gallery,
+#extras_gallery {
+    background: #100d11 !important;
+    background-color: #100d11 !important;
+    background-image: none !important;
+}
+
+.gradio-container .gradio-gallery .grid-wrap,
+#txt2img_gallery .grid-wrap,
+#img2img_gallery .grid-wrap,
+#extras_gallery .grid-wrap {
+    background: #100d11 !important;
+    background-color: #100d11 !important;
+    background-image: none !important;
+}
+
+/* Keep empty/thumbnail gallery surfaces in the purple-black palette too. */
+.gradio-container .gradio-gallery .thumbnail-item {
+    background: #171218 !important;
+    background-color: #171218 !important;
+    background-image: none !important;
+}
+
+/* Forge's VAE / Text Encoder control is #setting_sd_modules and is multiselect.
+   Each currently chosen module is a .token. */
+#setting_sd_modules div.token,
+#setting_sd_modules .token {
+    background: var(--rin-plum-2) !important;
+    background-color: var(--rin-plum-2) !important;
+    background-image: none !important;
+    border-color: var(--rin-violet) !important;
+    color: var(--rin-text) !important;
+    box-shadow: none !important;
+}
+
+#setting_sd_modules div.token:hover,
+#setting_sd_modules .token:hover {
+    background: #3a2740 !important;
+    background-color: #3a2740 !important;
+    border-color: #70417b !important;
+}
+
+/* The open dropdown can also mark the currently selected VAE as an option.
+   Override Forge's/default Gradio selected-row fill specifically here. */
+#setting_sd_modules ul.options li.item.selected,
+#setting_sd_modules .options .item.selected,
+.dark #setting_sd_modules ul.options li.item.selected,
+.dark #setting_sd_modules .options .item.selected {
+    background: #2d1e2e !important;
+    background-color: #2d1e2e !important;
+    color: var(--rin-text) !important;
+}
+
+/* Gradio dropdown tokens use these variables internally in some builds. Keep
+   them local to the VAE selector so unrelated checkbox-label styling stays put. */
+#setting_sd_modules {
+    --checkbox-label-background-fill: #2d1e2e !important;
+    --checkbox-label-background-fill-dark: #2d1e2e !important;
+    --checkbox-label-border-color: #5d3269 !important;
+    --checkbox-label-border-color-dark: #5d3269 !important;
+    --checkbox-label-text-color: #f2e8f0 !important;
+    --checkbox-label-text-color-dark: #f2e8f0 !important;
+}
+
+/* Remove remaining Gradio Default navy/blue panel surfaces.
+   Forge's output area is a gr.Column(variant="panel"), which uses
+   --panel-background-fill independently of gallery/block colors. */
+.gradio-container,
+.dark .gradio-container {
+    --panel-background-fill: #171218 !important;
+    --panel-background-fill-dark: #171218 !important;
+    --color-accent: var(--rin-orchid) !important;
+    --color-accent-dark: var(--rin-orchid) !important;
+    --color-accent-soft: #2d1e2e !important;
+    --color-accent-soft-dark: #2d1e2e !important;
+
+    /* Prevent Default's blue selected-checkbox label/toggle tokens leaking in. */
+    --checkbox-label-background-fill-selected: var(--rin-orchid) !important;
+    --checkbox-label-background-fill-selected-dark: var(--rin-orchid) !important;
+    --checkbox-label-border-color-selected: var(--rin-orchid) !important;
+    --checkbox-label-border-color-selected-dark: var(--rin-orchid) !important;
+    --checkbox-label-text-color-selected: #fff4fc !important;
+    --checkbox-label-text-color-selected-dark: #fff4fc !important;
+}
+
+/* Forge output panels. These explicit selectors win even if Gradio's Svelte
+   component CSS uses a literal/default panel fill rather than the variable. */
+#txt2img_results_panel,
+#img2img_results_panel,
+#extras_results_panel {
+    background: #171218 !important;
+    background-color: #171218 !important;
+    background-image: none !important;
+    border-color: var(--rin-border) !important;
+}
+
+#txt2img_gallery_container,
+#img2img_gallery_container,
+#extras_gallery_container,
+#image_buttons_txt2img,
+#image_buttons_img2img,
+#image_buttons_extras {
+    background-color: #171218 !important;
+    background-image: none !important;
+}
+
+/* Keep the actual image viewport slightly darker than its surrounding panel. */
+#txt2img_gallery,
+#img2img_gallery,
+#extras_gallery,
+#txt2img_gallery .preview,
+#img2img_gallery .preview,
+#extras_gallery .preview {
+    background-color: #100d11 !important;
+    background-image: none !important;
+}
+
+/* Forge native lightbox compatibility.
+   imageviewer.js creates the toolbar as `.modalControls.gradio-container`.
+   The theme's root `.gradio-container` surface rule must not turn that toolbar
+   into a full-height opaque panel over the modal image. */
+#lightboxModal > .modalControls.gradio-container,
+.modalControls.gradio-container {
+    min-height: 0 !important;
+    height: auto !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+}
+
+/* Root/backdrop coverage for scoped mobile zoom.
+   The zoom experiment scales only #quicksettings and #tabs, which can expose
+   otherwise-unused Gradio/root surfaces around the scaled content. Keep every
+   top-level surface in the theme palette rather than Gradio Default navy. */
+html,
+body,
+gradio-app,
+gradio-app > .gradio-container,
+#root,
+#quicksettings,
+#tabs,
+#tabs > .tabitem,
+#tab_txt2img,
+#tab_img2img,
+#tab_extras,
+#tab_pnginfo,
+#tab_modelmerger,
+#tab_settings,
+#tab_extensions {
+    background-color: var(--rin-ink) !important;
+    background-image: none !important;
+}
+
+/* Some Gradio builds expose the page backdrop through a main/wrap shell.
+   Keep this deliberately limited to top-level application wrappers. */
+body > main,
+gradio-app main,
+gradio-app .main,
+gradio-app .wrap {
+    background-color: var(--rin-ink) !important;
+    background-image: none !important;
+}
+
+/* Hires VAE / Text Encoder uses its own Forge multiselect (#hr_vae_te).
+   Match the main #setting_sd_modules token styling exactly. */
+#hr_vae_te div.token,
+#hr_vae_te .token {
+    background: var(--rin-plum-2) !important;
+    background-color: var(--rin-plum-2) !important;
+    background-image: none !important;
+    border-color: var(--rin-violet) !important;
+    color: var(--rin-text) !important;
+    box-shadow: none !important;
+}
+
+#hr_vae_te div.token:hover,
+#hr_vae_te .token:hover {
+    background: #3a2740 !important;
+    background-color: #3a2740 !important;
+    border-color: #70417b !important;
+}
+
+#hr_vae_te ul.options li.item.selected,
+#hr_vae_te .options .item.selected,
+.dark #hr_vae_te ul.options li.item.selected,
+.dark #hr_vae_te .options .item.selected {
+    background: #2d1e2e !important;
+    background-color: #2d1e2e !important;
+    color: var(--rin-text) !important;
+}
+
+#hr_vae_te {
+    --checkbox-label-background-fill: #2d1e2e !important;
+    --checkbox-label-background-fill-dark: #2d1e2e !important;
+    --checkbox-label-border-color: #5d3269 !important;
+    --checkbox-label-border-color-dark: #5d3269 !important;
+    --checkbox-label-text-color: #f2e8f0 !important;
+    --checkbox-label-text-color-dark: #f2e8f0 !important;
+    --checkbox-label-background-fill-selected: #2d1e2e !important;
+    --checkbox-label-background-fill-selected-dark: #2d1e2e !important;
+    --checkbox-label-border-color-selected: #5d3269 !important;
+    --checkbox-label-border-color-selected-dark: #5d3269 !important;
+    --checkbox-label-text-color-selected: #f2e8f0 !important;
+    --checkbox-label-text-color-selected-dark: #f2e8f0 !important;
+}
+
+/* Reassert lightbox exception after the broader root/backdrop coverage above. */
+#lightboxModal,
+#lightboxModal > .modalControls.gradio-container,
+.modalControls.gradio-container {
+    background-image: none !important;
+}
+
+#lightboxModal > .modalControls.gradio-container,
+.modalControls.gradio-container {
+    min-height: 0 !important;
+    height: auto !important;
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Generic Gradio dropdown/listbox selected-state cleanup.
+   Dropdown menus may be mounted outside the main .gradio-container, so target
+   both native Gradio option classes and ARIA listbox options directly. */
+.gradio-container ul.options li.item.selected,
+.gradio-container .options .item.selected,
+.gradio-container [role="listbox"] [role="option"][aria-selected="true"],
+body ul.options li.item.selected,
+body .options .item.selected,
+body [role="listbox"] [role="option"][aria-selected="true"] {
+    background: var(--rin-plum-2, #2d1e2e) !important;
+    background-color: var(--rin-plum-2, #2d1e2e) !important;
+    background-image: none !important;
+    color: var(--rin-text, #f2e8f0) !important;
+    border-color: var(--rin-violet, #5d3269) !important;
+}
+
+.gradio-container ul.options li.item.selected:hover,
+.gradio-container .options .item.selected:hover,
+.gradio-container [role="listbox"] [role="option"][aria-selected="true"]:hover,
+body ul.options li.item.selected:hover,
+body .options .item.selected:hover,
+body [role="listbox"] [role="option"][aria-selected="true"]:hover {
+    background: #3a2740 !important;
+    background-color: #3a2740 !important;
+    color: var(--rin-blush, #f4cae9) !important;
+}
+
+/* Selected values/tokens in generic Gradio multiselects. */
+.gradio-container .gradio-dropdown .token,
+.gradio-container .gradio-multiselect .token,
+body .gradio-dropdown .token,
+body .gradio-multiselect .token {
+    background: var(--rin-plum-2, #2d1e2e) !important;
+    background-color: var(--rin-plum-2, #2d1e2e) !important;
+    background-image: none !important;
+    border-color: var(--rin-violet, #5d3269) !important;
+    color: var(--rin-text, #f2e8f0) !important;
+}

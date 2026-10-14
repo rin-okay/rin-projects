@@ -1,0 +1,229 @@
+/* Forge Dock Manager v1.1 — generic dock shell. */
+
+.fdm-registry-host {
+    display: none !important;
+}
+
+.fdm-dock-shell {
+    --fdm-gap: 7px;
+    --fdm-content-gap: 7px;
+
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 6px 7px 7px;
+    gap: var(--fdm-gap);
+
+    border-width: var(--button-border-width, 1px);
+    border-style: solid;
+    border-color: var(--block-border-color, var(--border-color-primary, currentColor));
+    border-radius: var(--radius-lg, 8px);
+    background: var(--block-background-fill, var(--background-fill-primary, transparent));
+    color: var(--body-text-color, inherit);
+    box-shadow: var(--block-shadow, none);
+
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.fdm-dock-shell[data-module-visible="false"] {
+    display: none !important;
+}
+
+.fdm-dock-shell[data-dragging="true"] {
+    z-index: 1100;
+    transition: none !important;
+    border-color: var(--input-border-color-focus, var(--border-color-accent, var(--border-color-primary, currentColor)));
+    box-shadow:
+        0 0 0 2px var(--input-border-color-focus, var(--border-color-accent, var(--border-color-primary, currentColor))),
+        0 12px 30px rgba(0, 0, 0, 0.32);
+}
+
+.fdm-dock-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 15px;
+    flex: 0 0 15px;
+    margin: -1px 0 0;
+    padding: 0;
+    cursor: grab;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+}
+
+.fdm-dock-handle::before {
+    content: "";
+    display: block;
+    width: 42px;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--border-color-primary, currentColor);
+    opacity: 0.72;
+}
+
+.fdm-dock-handle:focus-visible::before {
+    background: var(--border-color-accent, var(--input-border-color-focus, currentColor));
+    opacity: 1;
+}
+
+.fdm-dock-shell[data-dragging="true"] .fdm-dock-handle {
+    cursor: grabbing;
+}
+
+.fdm-dock-shell[data-dragging="true"] .fdm-dock-handle::before {
+    width: 58px;
+    background: var(--input-border-color-focus, var(--border-color-accent, var(--border-color-primary, currentColor)));
+    opacity: 1;
+}
+
+
+/* Global dock lock: preserve a tiny visual separator while removing nearly all
+   movement-handle real estate. The handle becomes non-interactive until unlocked. */
+.fdm-dock-shell[data-locked="true"] {
+    padding-top: 3px;
+    gap: 3px;
+}
+
+.fdm-dock-shell[data-locked="true"] .fdm-dock-handle {
+    height: 2px;
+    flex: 0 0 2px;
+    margin: 0;
+    pointer-events: none;
+    cursor: default;
+    touch-action: auto;
+}
+
+.fdm-dock-shell[data-locked="true"] .fdm-dock-handle::before {
+    width: 28px;
+    height: 1px;
+    opacity: 0.28;
+}
+
+.fdm-dock-shell[data-locked="true"][data-dragging="true"] {
+    border-color: var(--block-border-color, var(--border-color-primary, currentColor));
+    box-shadow: var(--block-shadow, none);
+}
+
+.fdm-dock-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fdm-content-gap);
+    width: 100%;
+    min-width: 0;
+}
+
+/* Keep the manager itself structurally native to Forge/Gradio. */
+.fdm-manager-accordion {
+    min-width: min(18rem, 100%) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fdm-dock-shell,
+    .fdm-dock-shell * {
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Generic dock label visibility. Dock modules opt in by applying
+   .fdm-field-label to labels that can be removed in compact mode. */
+.fdm-dock-shell[data-labels="false"] .fdm-field-label {
+    display: none !important;
+}
+
+/* Dock registry refresh lives beside the Dock dropdown and inherits Gradio styling. */
+.fdm-manager-dock-row {
+    align-items: flex-end;
+}
+
+.fdm-refresh-button {
+    flex: 0 0 46px !important;
+    min-width: 46px !important;
+    max-width: 46px !important;
+    align-self: flex-end;
+}
+
+.fdm-refresh-button button,
+button.fdm-refresh-button {
+    min-width: 46px !important;
+    width: 46px !important;
+}
+
+/* Native Dock selector. This deliberately avoids Gradio's custom combobox so
+   Safari/iOS can use its own select UI without focus-zoom/listbox positioning. */
+.fdm-native-dock-host,
+.fdm-native-width-host {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+.fdm-native-dock-field,
+.fdm-native-width-field {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    gap: 4px;
+    box-sizing: border-box;
+}
+
+.fdm-native-dock-field > label,
+.fdm-native-width-field > label {
+    color: var(--block-label-text-color, var(--body-text-color-subdued, inherit));
+    font: inherit;
+    font-size: var(--block-label-text-size, 14px);
+    font-weight: var(--block-label-text-weight, 400);
+    line-height: var(--line-sm, 1.25);
+}
+
+.fdm-native-dock-select,
+.fdm-native-width-select {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 7px 10px;
+
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--input-border-color, var(--border-color-primary, currentColor));
+    border-radius: var(--input-border-radius, var(--radius-md, 4px));
+    background: var(--input-background-fill, var(--background-fill-primary, Canvas));
+    color: var(--body-text-color, CanvasText);
+    box-shadow: none;
+
+    font: inherit;
+    line-height: 1.25;
+}
+
+.fdm-native-dock-select:focus,
+.fdm-native-width-select:focus {
+    border-color: var(--input-border-color-focus, var(--border-color-accent, currentColor));
+    outline: none;
+}
+
+.fdm-native-dock-select:disabled,
+.fdm-native-width-select:disabled {
+    opacity: 0.5;
+}
+
+/* iOS Safari normally focus-zooms text controls below ~16px. Keep this native
+   selector at a focus-safe size on phones while leaving desktop typography alone. */
+@media (max-width: 900px) {
+    .fdm-native-dock-select,
+.fdm-native-width-select {
+        font-size: 16px !important;
+    }
+}
+
+
+/* Development hot-reload control. */
+.fdm-full-refresh-button {
+    width: 100%;
+}

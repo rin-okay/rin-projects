@@ -1,0 +1,64 @@
+/* CFG Dock v1
+   Reference layout for very small, single-control docks. */
+
+.fdm-dock-shell[data-dock-id="cfg"] .fdm-dock-content {
+    gap: 0;
+}
+
+.fdm-dock-shell[data-dock-id="cfg"] .fdm-simple-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) 56px;
+    align-items: center;
+    gap: 7px;
+    width: 100%;
+    min-width: 0;
+}
+
+.fdm-dock-shell[data-dock-id="cfg"] .fdm-simple-label {
+    color: var(--body-text-color-subdued, var(--body-text-color, inherit));
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.fdm-dock-shell[data-dock-id="cfg"] .fdm-simple-slider {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    accent-color: var(--button-primary-background-fill, currentColor);
+}
+
+.fdm-dock-shell[data-dock-id="cfg"] .fdm-simple-number {
+    width: 56px;
+    min-width: 0;
+    min-height: 34px;
+    margin: 0;
+    padding: 4px 5px;
+    box-sizing: border-box;
+
+    border-width: var(--button-border-width, 1px);
+    border-style: solid;
+    border-color: var(--border-color-primary, var(--block-border-color, currentColor));
+    border-radius: var(--radius-md, 4px);
+    background: var(--background-fill-primary, var(--block-background-fill, transparent));
+    color: var(--body-text-color, inherit);
+    box-shadow: none;
+
+    font: inherit;
+    font-size: 13px;
+    text-align: center;
+}
+
+.fdm-dock-shell[data-dock-id="cfg"] .fdm-simple-number:focus {
+    border-color: var(--input-border-color-focus, var(--border-color-accent, currentColor));
+    outline: none;
+}
+
+/* The core Labels option hides .fdm-field-label. When hidden, the slider
+   automatically consumes the released column. */
+.fdm-dock-shell[data-dock-id="cfg"][data-labels="false"] .fdm-simple-row {
+    grid-template-columns: minmax(0, 1fr) 56px;
+}

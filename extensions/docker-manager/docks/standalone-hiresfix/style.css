@@ -1,0 +1,94 @@
+/* Standalone Hires Fix dock
+   Compact geometry matching the Save/Favorite dock. */
+
+.fdm-dock-shell[data-dock-id="standalone-hiresfix"] {
+    width: max-content !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    padding: 4px 5px 5px !important;
+    --fdm-gap: 4px;
+    --fdm-content-gap: 0px;
+}
+
+.fdm-dock-shell[data-dock-id="standalone-hiresfix"] .fdm-dock-handle {
+    width: 100%;
+    min-width: 44px;
+    height: 12px;
+    flex-basis: 12px;
+}
+
+.fdm-dock-shell[data-dock-id="standalone-hiresfix"] .fdm-dock-handle::before {
+    width: 28px;
+}
+
+.fdm-dock-shell[data-dock-id="standalone-hiresfix"] .fdm-dock-content {
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    flex: 0 0 auto;
+    gap: 0;
+}
+
+.fdm-dock-shell[data-dock-id="standalone-hiresfix"] .fdm-standalone-hiresfix-button {
+    width: auto;
+    height: auto;
+    min-width: 44px;
+    min-height: 44px;
+    margin: 0;
+    padding: 5px;
+    box-sizing: border-box;
+
+    border-width: var(--button-border-width, 1px);
+    border-style: solid;
+    border-color: var(--button-secondary-border-color, var(--border-color-primary, currentColor));
+    border-radius: var(--button-secondary-border-radius, var(--radius-md, 4px));
+    background: var(--button-secondary-background-fill, var(--background-fill-secondary, transparent));
+    color: var(--button-secondary-text-color, var(--body-text-color, inherit));
+    box-shadow: var(--button-secondary-shadow, none);
+
+    font: inherit;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.fdm-dock-shell[data-dock-id="standalone-hiresfix"] .fdm-standalone-hiresfix-button:hover:not(:disabled),
+.fdm-dock-shell[data-dock-id="standalone-hiresfix"] .fdm-standalone-hiresfix-button:focus:not(:disabled) {
+    background: var(--button-secondary-background-fill-hover, var(--button-secondary-background-fill, transparent));
+    border-color: var(--button-secondary-border-color-hover, var(--button-secondary-border-color, currentColor));
+    color: var(--button-secondary-text-color-hover, var(--button-secondary-text-color, inherit));
+    outline: none;
+}
+
+.fdm-dock-shell[data-dock-id="standalone-hiresfix"] .fdm-standalone-hiresfix-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Cheeky click confirmation: a tiny celebratory shimmy while the icon flips to 💫. */
+.fdm-dock-shell[data-dock-id="standalone-hiresfix"] .fdm-standalone-hiresfix-button[data-clicked="true"] {
+    animation: fdm-hiresfix-cheeky-pop 720ms cubic-bezier(.2,.9,.25,1);
+    background: var(--button-primary-background-fill, var(--button-secondary-background-fill, transparent));
+    border-color: var(--button-primary-border-color, var(--border-color-accent, currentColor));
+    color: var(--button-primary-text-color, var(--button-secondary-text-color, inherit));
+}
+
+@keyframes fdm-hiresfix-cheeky-pop {
+    0%   { transform: scale(1) rotate(0deg); }
+    18%  { transform: scale(1.16) rotate(-12deg); }
+    38%  { transform: scale(1.08) rotate(12deg); }
+    58%  { transform: scale(1.12) rotate(-7deg); }
+    78%  { transform: scale(1.04) rotate(5deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fdm-dock-shell[data-dock-id="standalone-hiresfix"] .fdm-standalone-hiresfix-button[data-clicked="true"] {
+        animation: none;
+    }
+}

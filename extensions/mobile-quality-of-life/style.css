@@ -1,0 +1,263 @@
+/* Forge Mobile Zoom
+   Inline Quicksettings control + Safari/WebKit viewport-width scaling.
+   The zoom UI lives in Forge's normal layout instead of floating over it. */
+
+#forge-mobile-zoom-control {
+    display: none;
+    flex: 0 1 190px;
+    min-width: 156px;
+    max-width: 210px;
+    align-self: flex-end;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--body-text-color, inherit);
+}
+
+#forge-mobile-zoom-control[data-mobile="true"] {
+    display: block;
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-label {
+    margin: 0 0 4px 0;
+    padding: 0;
+    color: var(--block-label-text-color, var(--body-text-color-subdued, inherit));
+    font: inherit;
+    font-size: var(--block-label-text-size, 14px);
+    font-weight: var(--block-label-text-weight, 400);
+    line-height: var(--line-sm, 1.25);
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-buttons {
+    display: grid;
+    grid-template-columns: 42px minmax(58px, 1fr) 42px;
+    gap: 4px;
+    width: 100%;
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-button {
+    min-width: 0;
+    min-height: 40px;
+    margin: 0;
+    padding: 6px 8px;
+    box-sizing: border-box;
+
+    border-width: var(--button-border-width, 1px);
+    border-style: solid;
+    border-color: var(--button-secondary-border-color, var(--border-color-primary, currentColor));
+    border-radius: var(--button-secondary-border-radius, var(--radius-md, 4px));
+    background: var(--button-secondary-background-fill, var(--background-fill-secondary, transparent));
+    color: var(--button-secondary-text-color, var(--body-text-color, inherit));
+    box-shadow: var(--button-secondary-shadow, none);
+
+    font: inherit;
+    font-size: var(--button-medium-text-size, 14px);
+    font-weight: var(--button-medium-text-weight, 600);
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-button:hover:not(:disabled) {
+    border-color: var(--button-secondary-border-color-hover, var(--button-secondary-border-color, var(--border-color-primary, currentColor)));
+    background: var(--button-secondary-background-fill-hover, var(--button-secondary-background-fill, var(--background-fill-secondary, transparent)));
+    color: var(--button-secondary-text-color-hover, var(--button-secondary-text-color, var(--body-text-color, inherit)));
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-button:active:not(:disabled) {
+    background: var(--button-secondary-background-fill-hover, var(--button-secondary-background-fill, var(--background-fill-secondary, transparent)));
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-button:focus-visible {
+    outline: var(--button-border-width, 1px) solid var(--input-border-color-focus, var(--border-color-accent, currentColor));
+    outline-offset: 1px;
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-value {
+    font-variant-numeric: tabular-nums;
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-value[data-bypassed="true"] {
+    color: var(--body-text-color-subdued, inherit);
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+/* The inline zoom control should scale together with Quicksettings. Only the
+   separate floating Generate dock is compensated back toward finger size. */
+html[data-forge-mobile-viewport-zoom="true"] #forge-mobile-dock {
+    transform: scale(var(--forge-mobile-viewport-inverse, 1));
+    transform-origin: bottom right;
+}
+
+/* This is a phone tool. Keep desktop Quicksettings exactly as Forge made it. */
+@media (min-width: 901px) {
+    #forge-mobile-zoom-control {
+        display: none !important;
+    }
+}
+
+
+/* ========== Mobile Native Selects ========== */
+/* Mobile-native dropdown replacer for common Forge txt2img/img2img controls. */
+
+.fmns-source-hidden {
+    display: none !important;
+}
+
+.fmns-native-select-host {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.fmns-native-select {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 7px 10px;
+
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--input-border-color, var(--border-color-primary, currentColor));
+    border-radius: var(--input-border-radius, var(--radius-md, 4px));
+    background: var(--input-background-fill, var(--background-fill-primary, Canvas));
+    color: var(--body-text-color, CanvasText);
+    box-shadow: none;
+
+    font: inherit;
+    line-height: 1.25;
+    appearance: auto;
+    -webkit-appearance: menulist;
+}
+
+.fmns-native-select:focus {
+    border-color: var(--input-border-color-focus, var(--border-color-accent, currentColor));
+    outline: none;
+}
+
+.fmns-native-select:disabled {
+    opacity: 0.5;
+}
+
+@media (max-width: 900px) {
+    .fmns-native-select {
+        font-size: 16px !important;
+    }
+
+    #txt2img_prompt textarea,
+    #txt2img_neg_prompt textarea,
+    #img2img_prompt textarea,
+    #img2img_neg_prompt textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* ========== Collapsible Mobile Quick Settings ========== */
+/* Forge Mobile Quick Settings
+   Mobile-only collapsible Quicksettings plus optional Styles-bar hiding. */
+
+.fmqs-quicksettings-toggle,
+.fmqs-quicksettings-options {
+    display: none;
+}
+
+#quicksettings[data-fmqs-mobile="true"] > .fmqs-quicksettings-toggle {
+    display: flex;
+    flex: 1 0 100%;
+    width: 100%;
+    min-width: 100%;
+    min-height: 40px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 0;
+    padding: 7px 10px;
+
+    border-width: var(--button-border-width, 1px);
+    border-style: solid;
+    border-color: var(--block-border-color, var(--border-color-primary, currentColor));
+    border-radius: var(--radius-md, 4px);
+    background: var(--block-background-fill, var(--background-fill-secondary, transparent));
+    color: var(--body-text-color, inherit);
+    box-shadow: var(--block-shadow, none);
+
+    font: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-align: left;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#quicksettings[data-fmqs-mobile="true"] > .fmqs-quicksettings-toggle:hover,
+#quicksettings[data-fmqs-mobile="true"] > .fmqs-quicksettings-toggle:active {
+    border-color: var(--border-color-accent, var(--input-border-color-focus, currentColor));
+    background: var(--background-fill-secondary, var(--block-background-fill, transparent));
+}
+
+#quicksettings[data-fmqs-mobile="true"] > .fmqs-quicksettings-toggle:focus-visible {
+    outline: var(--button-border-width, 1px) solid var(--input-border-color-focus, var(--border-color-accent, currentColor));
+    outline-offset: 1px;
+}
+
+#quicksettings[data-fmqs-mobile="true"] .fmqs-quicksettings-arrow {
+    flex: 0 0 auto;
+    color: var(--body-text-color-subdued, var(--body-text-color, inherit));
+    font-size: 12px;
+}
+
+#quicksettings[data-fmqs-mobile="true"] > .fmqs-quicksettings-options {
+    display: flex;
+    flex: 1 0 100%;
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    align-items: center;
+    padding: 2px 4px 4px;
+}
+
+.fmqs-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 32px;
+    color: var(--body-text-color, inherit);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.fmqs-checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--button-primary-background-fill, var(--border-color-accent, currentColor));
+}
+
+/* Keep Forge's real Quicksettings children in their original DOM positions.
+   Only their presentation is collapsed. */
+#quicksettings[data-fmqs-mobile="true"][data-fmqs-collapsed="true"]
+    > :not(.fmqs-quicksettings-toggle) {
+    display: none !important;
+}
+
+/* Main prompt Styles bar: dropdown + edit/paintbrush button. */
+#txt2img_styles_row[data-fmqs-styles-hidden="true"],
+#img2img_styles_row[data-fmqs-styles-hidden="true"],
+[data-fmqs-styles-wrapper="true"] {
+    display: none !important;
+}

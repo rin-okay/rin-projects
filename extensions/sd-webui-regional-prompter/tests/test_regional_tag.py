@@ -153,6 +153,61 @@ class TestBridge(unittest.TestCase):
         self.assertEqual((tab,submode,ratios),('Matrix','Columns','2,2,2;2,4'))
         self.assertIn('<regional:',actual)
 
+    def test_negpip_guard(self):
+        scripts = sys.modules['modules.scripts']
+        old_runner = getattr(scripts, 'scripts_txt2img', None)
+        calls = []
+        def legacy(i, pn):
+            calls.append((i, pn))
+            # Match the exact attribute access that crashes in upstream.
+            n = scripts.scripts_txt2img.alwayson_scripts[-1]
+            conds = n.conds if pn else n.unconds
+            tokens = n.contokens if pn else n.untokens
+            return [conds[i], tokens[i]]
+        att = types.SimpleNamespace(negpipdealer=legacy)
+        try:
+            self.assertTrue(self.bridge._guard_negpip_attention(att))
+            self.assertFalse(self.bridge._guard_negpip_attention(att))
+            runner = scripts.scripts_txt2img = types.SimpleNamespace(alwayson_scripts=[])
+            self.assertIsNone(att.negpipdealer(0, True))
+            n = types.SimpleNamespace(filename=r'C:\extensions\sd-forge-negpip\scripts\negpip.py',
+                                      active=False, conds=None, unconds=None,
+                                      c_tokens=None, uc_tokens=None)
+            runner.alwayson_scripts = [n]
+            self.assertIsNone(att.negpipdealer(0, True))
+            self.assertIsNone(att.negpipdealer(0, False))
+            # Even an active NegPiP may have no conditioning on one side.
+            n.active = True
+            n.conds = []
+            self.assertIsNone(att.negpipdealer(0, True))
+            n.conds = ['concept']
+            n.c_tokens = [3]
+            with self.assertRaisesRegex(RuntimeError, 'Disable sd-forge-negpip'):
+                att.negpipdealer(0, True)
+            n.unconds = ['negative concept']
+            n.uc_tokens = [4]
+            with self.assertRaisesRegex(RuntimeError, 'Disable sd-forge-negpip'):
+                att.negpipdealer(0, False)
+            # Preserve the original region-aware API, including its output.
+            n.contokens = [2]
+            n.untokens = [5]
+            self.assertEqual(att.negpipdealer(0, True), ['concept', 2])
+            self.assertEqual(att.negpipdealer(0, False), ['negative concept', 5])
+            self.assertEqual(calls, [(0, True), (0, False)])
+        finally:
+            if old_runner is None:
+                del scripts.scripts_txt2img
+            else:
+                scripts.scripts_txt2img = old_runner
+
+    def test_guard_installed_on_loaded_attention_module(self):
+        att = types.SimpleNamespace(negpipdealer=lambda i, pn: None)
+        namespace = {'att': att}
+        exec('def process(self, p, *args): pass', namespace)
+        rp = type('RP', (), {'process': namespace['process']})
+        self.bridge._wrap_rp_class(rp)
+        self.assertTrue(att.negpipdealer._regional_tag_guard)
+
     def test_wrapped_upstream_process(self):
         seen=[]
         class RP:
@@ -173,3 +228,4 @@ class TestBridge(unittest.TestCase):
 
 
 if __name__ == '__main__': unittest.main()
+

@@ -2,6 +2,14 @@
 
 This is an ADDITIVE OVERLAY for the official hako-mikan `sd-webui-regional-prompter` extension, not a replacement for the upstream extension. It was designed against upstream code inspected on 2026-10-14, including the 2026-09-04 Forge Neo update. It leaves all upstream `rp.py`, `regions.py`, `attention.py`, `latent.py`, JS and UI files untouched. Installation adds `regional_core.py` and `scripts/regional_tag.py` to the upstream folder.
 
+## v1.0.3: NegPiP compatibility guard
+
+Fixes an attention-mode crash when `sd-forge-negpip` is installed but inactive: upstream Regional Prompter reads the legacy `contokens` / `untokens` fields, while that implementation uses `c_tokens` / `uc_tokens`.
+
+The overlay now guards the loaded attention helper at runtime without replacing upstream files. Inactive or empty NegPiP conditioning is skipped. The legacy region-aware NegPiP API keeps its original behavior. Active conditioning from the newer Forge NegPiP API stops with an actionable compatibility error; this release does not claim simultaneous support for its different token layout. To use Regional Prompter with that extension installed, disable `sd-forge-negpip` in Extensions and restart Forge.
+
+The guard also applies to ordinary Regional Prompter runs while this overlay is loaded. No other attention logic is changed. Regression tests use simulated script state; real GPU generation remains unverified.
+
 ## Install
 
 1. Install the current Regional Prompter from `https://github.com/hako-mikan/sd-webui-regional-prompter` through Extensions > Install from URL, if not already installed.
@@ -115,3 +123,4 @@ python tests/test_regional_tag.py
 Tests validate parser/tag roundtrip, invalid input, mixed-case tags, legacy prompt preservation, RP argument overrides, native extra-network registration, and tagged/non-tagged forwarding with mocked upstream RP. They do **not** validate real Forge Neo generation, Hires Fix, or actual PNG writes; test those on your installed checkpoint. This is a first implementation, not a GPU-validated release.
 
 This code is an AGPL-3.0-compatible overlay for [hako-mikan/sd-webui-regional-prompter](https://github.com/hako-mikan/sd-webui-regional-prompter), which is AGPL-3.0 licensed. No original upstream files are redistributed in this ZIP.
+

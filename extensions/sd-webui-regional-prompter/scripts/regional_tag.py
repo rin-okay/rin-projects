@@ -122,10 +122,48 @@ def _adapt_prompt_separators(p, sep):
             setattr(p,attr,[_replace_custom_separator(x,sep) if isinstance(x,str) else x for x in src])
 
 
+def _guard_negpip_attention(attention):
+    """Avoid upstream's legacy NegPiP lookup when no NegPiP is active.
+
+    Forge NegPiP's c_tokens are scheduled concepts, not RP region slots, so
+    aliasing them to contokens would silently assign the wrong conditioning.
+    Keep the original implementation for the legacy, region-aware API.
+    """
+    original = getattr(attention, 'negpipdealer', None)
+    if not callable(original) or getattr(original, '_regional_tag_guard', False):
+        return False
+
+    @wraps(original)
+    def guarded(i, pn):
+        runner = getattr(scripts, 'scripts_txt2img', None)
+        negpip = None
+        for script in getattr(runner, 'alwayson_scripts', []) or []:
+            if 'negpip.py' in str(getattr(script, 'filename', '')).replace('\\', '/').lower():
+                negpip = script
+        if negpip is None or not getattr(negpip, 'active', True):
+            return None
+        conds = getattr(negpip, 'conds' if pn else 'unconds', None)
+        if conds is None or len(conds) == 0:
+            return None
+        if not all(hasattr(negpip, name) for name in ('contokens', 'untokens')):
+            raise RuntimeError(
+                'Regional Prompter cannot combine active Forge NegPiP conditioning '
+                'with its legacy region-token interface. Disable sd-forge-negpip '
+                'in Extensions and restart Forge, or use a compatible '
+                'region-aware NegPiP implementation. Renaming c_tokens is not sufficient.'
+            )
+        return original(i, pn)
+
+    guarded._regional_tag_guard = True
+    attention.negpipdealer = guarded
+    return True
+
+
 def _wrap_rp_class(cls):
     if getattr(cls, '_regional_tag_bridge_patched', False):
         return False
     original = cls.process
+    _guard_negpip_attention(getattr(original, '__globals__', {}).get('att'))
 
     @wraps(original)
     def tagged_process(self, p, *args, **kwargs):
@@ -286,3 +324,4 @@ class Script(scripts.Script):
     def process(self, p, *args):
         # Can also catch installations where scripts_data is populated late.
         _patch_upstream()
+

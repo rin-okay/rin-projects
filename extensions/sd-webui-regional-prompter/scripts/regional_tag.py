@@ -159,6 +159,56 @@ def _guard_negpip_attention(attention):
     return True
 
 
+def _metadata_text(text):
+    # Reuse Forge's own comment setting/parser for the normal metadata path.
+    try:
+        from modules.processing_scripts.comments import strip_comments
+    except ImportError:
+        return text
+    return strip_comments(text)
+
+
+def _capture_regional_prompt(p):
+    snapshot = {}
+    for field, cache in (('all_prompts', '_all_prompts_c'),
+                         ('all_negative_prompts', '_all_negative_prompts_c')):
+        current = list(getattr(p, field, []) or [])
+        raw = getattr(p, cache, None)
+        # Comments can run before or after RP. Only trust an earlier raw cache
+        # when stripping it reproduces the current inputs (also rejects stale caches).
+        if isinstance(raw, list) and [_metadata_text(x) for x in raw] == current:
+            current = list(raw)
+        snapshot[field] = current
+    for field in ('prompt', 'negative_prompt'):
+        value = getattr(p, field, '')
+        snapshot[field] = list(value) if isinstance(value, list) else value
+    p._regional_tag_prompt_snapshot = snapshot
+
+
+def _restore_regional_metadata(p, batch_number=None):
+    snapshot = getattr(p, '_regional_tag_prompt_snapshot', None)
+    if not snapshot:
+        return
+    for field, cache, main in (('all_prompts', '_all_prompts_c', 'main_prompt'),
+                              ('all_negative_prompts', '_all_negative_prompts_c', 'main_negative_prompt')):
+        raw = snapshot[field]
+        if not raw:
+            continue
+        # Detach the list: RP can alias all_hr_prompts to all_prompts. Never
+        # replace conditioning inputs for a future batch or its Hires Fix pass.
+        values = list(getattr(p, field, []) or [])
+        if batch_number is None:
+            values = [_metadata_text(x) for x in raw]
+        else:
+            start = int(batch_number) * p.batch_size
+            end = min(start + p.batch_size, len(raw))
+            values[start:end] = [_metadata_text(x) for x in raw[start:end]]
+        setattr(p, field, values)
+        # Forge's Save Raw Comments path reads these instead of all_prompts.
+        setattr(p, cache, list(raw))
+        setattr(p, main, _metadata_text(raw[0]))
+
+
 def _wrap_rp_class(cls):
     if getattr(cls, '_regional_tag_bridge_patched', False):
         return False
@@ -170,6 +220,7 @@ def _wrap_rp_class(cls):
         _ensure_network()
         present, config, error = last_regional_from_prompt(_string_prompt(p))
         p._regional_tag_requested = bool(present)
+        p._regional_tag_prompt_snapshot = None
         if not present:
             return original(self, p, *args, **kwargs)
         if error or config is None:
@@ -189,15 +240,14 @@ def _wrap_rp_class(cls):
             if disabled: disabled[0] = False
             return original(self, p, *disabled, **kwargs)
         p._regional_tag_config = config
+        _capture_regional_prompt(p)
         # Native prompt-based handling. RP already maps BREAK -> ADDROW/ADDCOL
         # using its own makeimgtmp/keyconverter; only the alias is translated.
         _adapt_prompt_separators(p, config.sep)
         outcome = original(self, p, *values, **kwargs)
-        # Do not write the tag to extra_generation_params or implement a PNG Info
-        # reinsertion callback. Forge Neo keeps original extra-network tags in
-        # p.all_prompts, then uses those prompts for its normal image infotext.
-        # The upstream RP script does transform region separators in its prompt
-        # processing, but the <regional:...> tag survives unchanged in the text.
+        # Restore the input snapshot only after sampling, before native infotext
+        # generation. Restoring here would feed ADDCOL/ADDROW to the encoder.
+        # No PNG Info reinsertion callback or separate Regional Tag field.
         # RP's old per-control fields are redundant and can override the tag
         # when a PNG is sent back to txt2img/img2img, so suppress just those.
         for key in list(p.extra_generation_params):
@@ -241,8 +291,8 @@ def _patch_upstream():
 
 
 # Identical extra-network registration lifecycle to Lum Experiment.
-# PNG Info restoration is entirely Forge Neo's responsibility. No hook,
-# custom infotext field, or prompt-mutation fallback is installed.
+# Forge Neo writes infotext from the prompt lists restored after sampling.
+# No custom infotext field or PNG Info parser/save callback is installed.
 _ensure_network()
 
 
@@ -324,4 +374,20 @@ class Script(scripts.Script):
     def process(self, p, *args):
         # Can also catch installations where scripts_data is populated late.
         _patch_upstream()
+
+    def postprocess_batch(self, p, *args, **kwargs):
+        _restore_regional_metadata(p, kwargs.get('batch_number', getattr(p, 'iteration', 0)))
+
+    def postprocess(self, p, processed, *args):
+        snapshot = getattr(p, '_regional_tag_prompt_snapshot', None)
+        if not snapshot:
+            return
+        _restore_regional_metadata(p)
+        for field in ('prompt', 'negative_prompt'):
+            value = snapshot[field]
+            setattr(p, field, list(value) if isinstance(value, list) else value)
+            setattr(processed, field, value[0] if isinstance(value, list) and value else value)
+        processed.all_prompts = list(p.all_prompts)
+        processed.all_negative_prompts = list(p.all_negative_prompts)
+
 

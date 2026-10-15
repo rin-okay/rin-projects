@@ -2,6 +2,16 @@
 
 This is an ADDITIVE OVERLAY for the official hako-mikan `sd-webui-regional-prompter` extension, not a replacement for the upstream extension. It was designed against upstream code inspected on 2026-10-14, including the 2026-09-04 Forge Neo update. It leaves all upstream `rp.py`, `regions.py`, `attention.py`, `latent.py`, JS and UI files untouched. Installation adds `regional_core.py` and `scripts/regional_tag.py` to the upstream folder.
 
+## v1.0.4: preserve original regional prompts in metadata
+
+Captures the styled positive and negative prompts before Regional Prompter replaces separators and expands the common prompt. After each batch finishes sampling, it restores that batch's original prompt text and Forge's raw-comment cache before Forge builds its standard infotext. `ADDCOMM`, `ADDCOL`, `ADDROW`, `ADDBASE`, custom separators, and extra-network tags are preserved. This prevents expanded common prompts and regional tags from being repeated in saved metadata.
+
+Generation still uses upstream's expanded conditioning text. Only completed batch slots are restored, and lists are detached so aliased Hires Fix conditioning is left untouched. No custom PNG Info parser, save callback, or `Regional Tag` metadata field is added. Jobs without a valid regional tag are unchanged.
+
+Forge's comment settings still apply: enable **Save Raw Comments** as well as **Remove Comments from Prompts** to keep the helper's canvas and region annotations in saved metadata. With raw comments disabled, Forge removes comments but retains the regional separators.
+
+Validation: 19 regression tests passed. A separate check exercised the actual upstream separator/common-prompt functions, Forge Comments script, and native infotext writer across 32 cases, including both comment hook orders, settings, and multiple images/iterations. GPU generation remains untested.
+
 ## v1.0.3: NegPiP compatibility guard
 
 Fixes an attention-mode crash when `sd-forge-negpip` is installed but inactive: upstream Regional Prompter reads the legacy `contokens` / `untokens` fields, while that implementation uses `c_tokens` / `uc_tokens`.
@@ -108,7 +118,7 @@ Based directly on the implementation pattern from Forge Lum Experiment 1.6.0: a 
 
 The bridge wraps the **existing** upstream `rp.Script.process` method and supplies its original positional argument list with tagged values, instead of rebuilding matrix division, attention masks, latent processing, LoRA manipulation, or DiT support. Normal RP processing without tags is unchanged. Tagged settings take priority over stale RP UI settings. It uses the last tag in the positive prompt for a generation, so avoid mixing different regional settings across a batch of prompts.
 
-The overlay follows Forge Neo's normal extra-network prompt handling, just like `<lora:...>` and Lum Experiment's `<lumex:...>`. Forge parses the tag out of the conditioning prompt but keeps it in the original `p.all_prompts` list, from which it restores the prompt text before writing the regular image infotext. The `<regional:...>` tag is therefore kept in the main positive prompt text, not in an additional parameter field.
+The overlay follows Forge Neo's normal extra-network prompt handling, just like `<lora:...>` and Lum Experiment's `<lumex:...>`. Forge parses the tag out of the conditioning prompt. The bridge preserves the original prompts separately while Regional Prompter transforms its working lists, then restores completed batch slots and Forge's raw-comment cache before regular image infotext is written. The `<regional:...>` tag is therefore kept in the main positive prompt text, not in an additional parameter field.
 
 **No custom PNG Info logic:** there is no `Regional Tag` metadata field, `on_infotext_pasted` callback, fallback tag insertion, or custom infotext reconstruction. Forge Neo's native processing handles this. The original RP per-control `RP ...` metadata fields are suppressed only when a tag is used, so restoring images won't load stale RP UI values that compete with the prompt tag.
 
@@ -123,4 +133,5 @@ python tests/test_regional_tag.py
 Tests validate parser/tag roundtrip, invalid input, mixed-case tags, legacy prompt preservation, RP argument overrides, native extra-network registration, and tagged/non-tagged forwarding with mocked upstream RP. They do **not** validate real Forge Neo generation, Hires Fix, or actual PNG writes; test those on your installed checkpoint. This is a first implementation, not a GPU-validated release.
 
 This code is an AGPL-3.0-compatible overlay for [hako-mikan/sd-webui-regional-prompter](https://github.com/hako-mikan/sd-webui-regional-prompter), which is AGPL-3.0 licensed. No original upstream files are redistributed in this ZIP.
+
 

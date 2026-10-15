@@ -122,18 +122,78 @@ class TestBridge(unittest.TestCase):
         self.assertEqual(p._regional_tag_config.ratios, '2,1')
         self.assertEqual(p._regional_tag_config.mode, 'rows')
 
-    def test_native_prompt_metadata_path(self):
-        # Forge Neo saves prompt text from p.all_prompts after restoring
-        # p.prompts from it during postprocess_batch. The extension doesn't
-        # need its own PNG Info callback or metadata field.
-        tag='<regional:mode=rows:ratios=2,1>'
-        p=types.SimpleNamespace(all_prompts=['left BREAK right\n'+tag])
-        self.assertIn(tag, p.all_prompts[0])
+    def test_metadata_preserves_separators_without_changing_sampling(self):
         import re
-        p.prompts=[re.sub(r'<(\w+):([^>]+)>','',p.all_prompts[0])]
-        self.assertNotIn(tag,p.prompts[0])
-        p.prompts=p.all_prompts[:]
-        self.assertIn(tag,p.prompts[0])
+        source = ('<regional:mode=rows:ratios=1,1:common=1>\n'
+                  '# canvas: width=1280 height=384\nshared\nADDCOMM\n'
+                  'left\nADDCOL\nright\nADDROW\nbottom\nADDBASE\nbase\n'
+                  '<lora:style:0.4><lumex:mode=tonal:lum=-0.45>')
+        negative = '# note\nnoise'
+        for save_comments in (False, True):
+            with self.subTest(save_comments=save_comments):
+                p = types.SimpleNamespace(prompt=source, negative_prompt=negative,
+                    all_prompts=[source, source+' second'],
+                    all_negative_prompts=[negative, negative], batch_size=1,
+                    extra_generation_params={})
+                class RP:
+                    def process(self, p, *args):
+                        p.all_prompts = ['expanded sampling 0', 'expanded sampling 1']
+                        p.all_negative_prompts = ['negative sampling 0', 'negative sampling 1']
+                        p.all_hr_prompts = p.all_prompts  # upstream aliases these
+                        p.prompt = 'expanded common text and tag'
+                self.bridge._wrap_rp_class(RP)
+                args=[False,False,'Matrix','Columns','Mask','Prompt','1,1','0.2',False,False,False,'Attention',[], '0','0','0.4',None,'0','0',False]
+                old_strip = self.bridge._metadata_text
+                strip = lambda x: re.sub(r'[^\S\n]*#.*', '', x)
+                self.bridge._metadata_text = strip
+                try:
+                    RP().process(p, *args)
+                    self.assertEqual(p.all_prompts[0], 'expanded sampling 0')
+                    # Forge Comments runs after RP and caches expanded prompts.
+                    p._all_prompts_c = p.all_prompts[:]
+                    p._all_negative_prompts_c = p.all_negative_prompts[:]
+                    self.bridge.Script().postprocess_batch(p, batch_number=0)
+                    self.assertEqual(p.all_prompts[1], 'expanded sampling 1')
+                    self.assertEqual(p.all_hr_prompts, ['expanded sampling 0', 'expanded sampling 1'])
+                    self.assertEqual(p.main_prompt, strip(source))
+                    # Native Forge selects raw caches only when enabled.
+                    text = (p._all_prompts_c if save_comments else p.all_prompts)[0]
+                    self.assertEqual(text, source if save_comments else strip(source))
+                    self.assertEqual(text.count('<regional:'), 1)
+                    for marker in ('ADDCOMM', 'ADDCOL', 'ADDROW', 'ADDBASE'):
+                        self.assertIn(marker, text)
+                    self.bridge.Script().postprocess_batch(p, batch_number=1)
+                    self.assertEqual(p.all_prompts[1], strip(source+' second'))
+                    processed=types.SimpleNamespace()
+                    self.bridge.Script().postprocess(p, processed)
+                    self.assertEqual(processed.prompt, source)
+                    self.assertEqual(processed.all_prompts, p.all_prompts)
+                finally:
+                    self.bridge._metadata_text = old_strip
+
+    def test_metadata_capture_accepts_only_matching_early_comment_cache(self):
+        old_strip = self.bridge._metadata_text
+        self.bridge._metadata_text = lambda x: x.replace('# note\n', '')
+        try:
+            p=types.SimpleNamespace(prompt='text', negative_prompt='',
+                all_prompts=['text'], all_negative_prompts=[''],
+                _all_prompts_c=['# note\ntext'])
+            self.bridge._capture_regional_prompt(p)
+            self.assertEqual(p._regional_tag_prompt_snapshot['all_prompts'], ['# note\ntext'])
+            p._all_prompts_c=['old job']
+            self.bridge._capture_regional_prompt(p)
+            self.assertEqual(p._regional_tag_prompt_snapshot['all_prompts'], ['text'])
+        finally:
+            self.bridge._metadata_text=old_strip
+
+    def test_no_tag_does_not_restore_previous_job(self):
+        class RP:
+            def process(self, p, *args): pass
+        self.bridge._wrap_rp_class(RP)
+        p=types.SimpleNamespace(prompt='ordinary', _regional_tag_prompt_snapshot={'old': True})
+        RP().process(p)
+        self.bridge.Script().postprocess_batch(p, batch_number=0)
+        self.assertIsNone(p._regional_tag_prompt_snapshot)
 
     def test_wrapped_matrix_uses_native_break_conversion(self):
         seen=[]
@@ -228,4 +288,5 @@ class TestBridge(unittest.TestCase):
 
 
 if __name__ == '__main__': unittest.main()
+
 

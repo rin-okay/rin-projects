@@ -13,6 +13,7 @@ Forge Neo extensions and little tools I've made or modified.
 
 ### Mobile extensions for Forge Neo
 
+- [Gallery Restore](extensions/forge-gallery-restore/) - restore recent gallery results, generation parameters, and inactive Hires Fix settings after mobile browser interruptions.
 - [Docker Manager](extensions/docker-manager/) - floating, movable docks for generation, gallery, Hires Fix, and other controls. Includes lock/hide tools and hot-refreshable dock modules.
 - [Mobile Quality of Life](extensions/mobile-quality-of-life/) - mobile zoom, native selection menus, and collapsible Quick Settings.
 - [Rin Theme](extensions/rin-theme/) - dark purple Rin Neon theme and Forge UI styling.

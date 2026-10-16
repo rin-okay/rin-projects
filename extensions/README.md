@@ -5,6 +5,7 @@ Forge Neo extensions, maintained in `rin-projects`. Each listed project is indep
 | Extension | Purpose | Get it |
 | --- | --- | --- |
 | CFG Scheduler v1.4 | Prompt-based CFG changes over sampling steps, with separate base and Hires Fix schedules. | [Guide](CFG-SCHEDULER.md) · [ZIP](forge-cfg-scheduler-v1.4.zip) |
+| [Gallery Restore](forge-gallery-restore/) | Recover gallery results and generation settings after mobile browser interruptions; includes img2img source restore support. | [Source](forge-gallery-restore/) · [ZIP](forge-gallery-restore.zip) |
 | [Docker Manager](docker-manager/) | Floating, movable Generate, Seed, CFG, Hires Fix, gallery, Save, visibility, and lock docks, plus hot-refreshable dock modules. | [Source folder](docker-manager/) |
 | [Mobile Quality of Life](mobile-quality-of-life/) | Mobile zoom, native selection menus, and collapsible Quick Settings. | [Source folder](mobile-quality-of-life/) |
 | [Rin Theme](rin-theme/) | Dark purple Rin Neon Gradio styling. | [Source folder](rin-theme/) |

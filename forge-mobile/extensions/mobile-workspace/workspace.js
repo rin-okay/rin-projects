@@ -40,6 +40,9 @@
   const hiresToggle = byId('mobile-hires-toggle');
   const clonePrompt = byId('mobile-clone-prompt');
   const generationActions = byId('mobile-generation-actions');
+  const runningActions = byId('mobile-running-actions');
+  const stopButton = byId('mobile-stop-generation');
+  const skipButton = byId('mobile-skip-generation');
   const enableHiresPrompt = byId('mobile-enable-hires-prompt');
   const hiresInParams = byId('mobile-hires-in-params');
   const scaleDown = byId('mobile-scale-down');
@@ -82,6 +85,7 @@
   }
 
   function restoreControls() {
+    generationObserver.disconnect();
     hiresDivider.remove();
     for (const { node, marker, hidden } of moved.reverse()) {
       marker.replaceWith(node);
@@ -112,6 +116,23 @@
     return tab + (negative ? '_neg_prompt' : '_prompt');
   }
 
+  function syncGenerationActions() {
+    const visible = action => {
+      const button = byId(mountedMode + '_' + action);
+      return button && !button.hidden && getComputedStyle(button).display !== 'none';
+    };
+    const stopping = visible('interrupting');
+    const running = Boolean(stopping || visible('interrupt'));
+    generationActions.toggleAttribute('data-running', running);
+    runningActions.hidden = !running;
+    stopButton.disabled = Boolean(stopping);
+    skipButton.disabled = Boolean(stopping) || !visible('skip');
+  }
+
+  const generationObserver = new MutationObserver(syncGenerationActions);
+  stopButton.addEventListener('click', () => byId(mountedMode + '_interrupt')?.click());
+  skipButton.addEventListener('click', () => byId(mountedMode + '_skip')?.click());
+
   function mountControls() {
     const tab = nativeTab();
     mode.value = tab;
@@ -140,9 +161,14 @@
         node.classList.add(className);
       }
     }
-    for (const action of ['generate', 'interrupt', 'interrupting', 'skip']) {
-      place(byId(tab + '_' + action), generationActions);
+    // Forge positions its native Stop and Skip over its own Generate box.
+    // Keep them there and mirror their state within the mobile button's slot.
+    place(byId(tab + '_generate'), generationActions);
+    for (const action of ['interrupt', 'interrupting', 'skip']) {
+      const button = byId(tab + '_' + action);
+      if (button) generationObserver.observe(button, { attributes: true, attributeFilter: ['style', 'class', 'hidden'] });
     }
+    syncGenerationActions();
 
     const model = byId('quicksettings');
     place(model, panelBody);

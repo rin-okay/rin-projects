@@ -1,4 +1,4 @@
-<section id="mobile-overlay" data-mobile-build="0.3.19" class="gradio-container" role="dialog" aria-modal="true" aria-label="Mobile workspace" hidden>
+<section id="mobile-overlay" data-mobile-build="0.3.20" class="gradio-container" role="dialog" aria-modal="true" aria-label="Mobile workspace" hidden>
   <header id="mobile-bar" class="mobile-bar">
     <div class="mobile-bar-clip">
       <div class="mobile-actions">
@@ -69,7 +69,12 @@
         <button type="button" class="gradio-button" id="mobile-negative-toggle" aria-controls="mobile-prompt" aria-pressed="false">Negative<br> prompt</button>
         <button type="button" class="gradio-button" id="mobile-hires-toggle" aria-controls="mobile-prompt" aria-pressed="false" hidden>Normal</button>
 
-        <div id="mobile-generation-actions"></div>
+        <div id="mobile-generation-actions">
+          <div id="mobile-running-actions" hidden>
+            <button type="button" class="gradio-button" id="mobile-stop-generation">Stop</button>
+            <button type="button" class="gradio-button" id="mobile-skip-generation">Skip</button>
+          </div>
+        </div>
       </div>
       </div>
       <button type="button" class="gradio-button" id="mobile-clone-prompt" hidden>Clone regular prompt</button>

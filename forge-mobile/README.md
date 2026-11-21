@@ -1,4 +1,4 @@
-# Forge Mobile Client v0.3.21
+# Forge Mobile Client v0.3.22
 
 A standalone companion on port 7862 with the mobile workspace from the HTML preview. Start Forge normally on 7860, then run this companion from its own directory.
 
@@ -33,11 +33,19 @@ git sparse-checkout set forge-mobile
 forge-mobile\start-mobile.bat
 ```
 
-If migrating from a ZIP, stop the old companion and copy `workspace.json`, `mobile-settings.json`, the `input-archive/` data directory if present, and your custom docks into the new `forge-mobile/` folder. Keep the old install as a backup. If you use the Parameters Saver, also copy its optional `extensions/input-archive/` folder. The Git version already includes the companion hooks used by that add-on.
+If migrating from a ZIP, stop the old companion and copy `workspace.json`, `mobile-settings.json`, the `input-archive/` data directory if present, and your custom docks into the new `forge-mobile/` folder. Keep the old install as a backup.
 
 Each launch fetches `main` from the configured origin and applies a fast-forward update before starting the app. A download failure, wrong checkout, or local Git changes skips the update and continues with the installed copy. A non-Git installation launches normally. Run `set FORGE_SKIP_UPDATES=1` in Command Prompt before running the batch file to bypass updates in that shell.
 
 The launch log reports `Version installed (v…)` after an update or `No new version (v…)` when the checkout is current. The companion also prints its installed version at startup.
+
+## ControlNet / img2img Parameters Saver
+
+Forge Mobile includes the Parameters Saver starting with v0.3.22. Restart the companion to load the bundled copy. The bundled code lives in `extensions/parameters-saver/` so Git can update it alongside an existing manual installation at `extensions/input-archive/`.
+
+For archive capture to work, Forge Neo must load the matching metadata helper. If it is already installed, restart only Forge Mobile. Otherwise, copy [`forge-mobile-input-metadata`](forge-neo-extensions/forge-mobile-input-metadata/) from `forge-neo-extensions/` in this checkout into Forge Neo's own `extensions/` directory, then restart Forge Neo and Forge Mobile. Adding a Forge extension changes the component layout, so export your mobile workspace first if you want to keep its current draft.
+
+Generate from Forge Mobile with a single img2img source or supported ControlNet inputs. A successful capture writes data to `input-archive/images/` and `input-archive/recipes/` beside `workspace.json`; an output with a saved recipe contains `Forge Mobile input archive: <hash>` in its metadata. IIB can use that reference to restore archived inputs and settings when sending the output back to Forge. Keep the `input-archive/` data folder when moving or upgrading an installation.
 
 ## Forge Neo extension update plan
 

@@ -413,7 +413,7 @@ class Companion:
         )
 
         self.input_archive = None
-        archive = HERE / "extensions" / "input-archive" / "archive.py"
+        archive = HERE / "extensions" / "parameters-saver" / "archive.py"
         if archive.is_file():
             spec = spec_from_file_location("forge_mobile_input_archive", archive)
             module = module_from_spec(spec)

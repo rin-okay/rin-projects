@@ -1,0 +1,99 @@
+/* Forge Mobile Quick Settings
+   Mobile-only collapsible Quicksettings plus optional Styles-bar hiding. */
+
+.fmqs-quicksettings-toggle,
+.fmqs-quicksettings-options {
+    display: none;
+}
+
+#quicksettings[data-fmqs-mobile="true"] > .fmqs-quicksettings-toggle {
+    display: flex;
+    flex: 1 0 100%;
+    width: 100%;
+    min-width: 100%;
+    min-height: 40px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 0;
+    padding: 7px 10px;
+
+    border-width: var(--button-border-width, 1px);
+    border-style: solid;
+    border-color: var(--block-border-color, var(--border-color-primary, currentColor));
+    border-radius: var(--radius-md, 4px);
+    background: var(--block-background-fill, var(--background-fill-secondary, transparent));
+    color: var(--body-text-color, inherit);
+    box-shadow: var(--block-shadow, none);
+
+    font: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-align: left;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#quicksettings[data-fmqs-mobile="true"] > .fmqs-quicksettings-toggle:hover,
+#quicksettings[data-fmqs-mobile="true"] > .fmqs-quicksettings-toggle:active {
+    border-color: var(--border-color-accent, var(--input-border-color-focus, currentColor));
+    background: var(--background-fill-secondary, var(--block-background-fill, transparent));
+}
+
+#quicksettings[data-fmqs-mobile="true"] > .fmqs-quicksettings-toggle:focus-visible {
+    outline: var(--button-border-width, 1px) solid var(--input-border-color-focus, var(--border-color-accent, currentColor));
+    outline-offset: 1px;
+}
+
+#quicksettings[data-fmqs-mobile="true"] .fmqs-quicksettings-arrow {
+    flex: 0 0 auto;
+    color: var(--body-text-color-subdued, var(--body-text-color, inherit));
+    font-size: 12px;
+}
+
+#quicksettings[data-fmqs-mobile="true"] > .fmqs-quicksettings-options {
+    display: flex;
+    flex: 1 0 100%;
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    align-items: center;
+    padding: 2px 4px 4px;
+}
+
+.fmqs-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 32px;
+    color: var(--body-text-color, inherit);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.fmqs-checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--button-primary-background-fill, var(--border-color-accent, currentColor));
+}
+
+/* Keep Forge's real Quicksettings children in their original DOM positions.
+   Only their presentation is collapsed. */
+#quicksettings[data-fmqs-mobile="true"][data-fmqs-collapsed="true"]
+    > :not(.fmqs-quicksettings-toggle) {
+    display: none !important;
+}
+
+/* Main prompt Styles bar: dropdown + edit/paintbrush button. */
+#txt2img_styles_row[data-fmqs-styles-hidden="true"],
+#img2img_styles_row[data-fmqs-styles-hidden="true"],
+[data-fmqs-styles-wrapper="true"] {
+    display: none !important;
+}

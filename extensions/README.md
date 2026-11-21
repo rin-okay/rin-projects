@@ -27,3 +27,7 @@ Remove or disable older copies providing the same functionality before installin
 For Docker Manager, retain an existing dock layout by copying `state/dock-layout.json` from the old installation to `docker-manager/state/dock-layout.json` locally. Avoid committing local layouts or credentials. Its Full Dock Refresh can load changed dock modules without restarting Forge, though installing a new extension still requires a restart.
 
 Static checks and included unit tests do not replace runtime testing against your Forge Neo installation.
+
+## Startup updates
+
+The [Forge startup updater](../forge-mobile/FORGE-EXTENSIONS.md) lists the available extensions and lets each Forge installation opt in. The older native mobile helpers live under [legacy](legacy/).

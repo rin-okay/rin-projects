@@ -1,4 +1,4 @@
-# Forge Mobile Client v0.3.23
+# Forge Mobile Client v0.3.24
 
 A standalone companion on port 7862 with the mobile workspace from the HTML preview. Start Forge normally on 7860, then run this companion from its own directory.
 
@@ -57,11 +57,9 @@ For archive capture to work, Forge Neo must load the [bundled metadata helper](f
 
 Generate from Forge Mobile with a single img2img source or supported ControlNet inputs. A successful capture writes data to `input-archive/images/` and `input-archive/recipes/` beside `workspace.json`; an output with a saved recipe contains `Forge Mobile input archive: <hash>` in its metadata. IIB can use that reference to restore archived inputs and settings when sending the output back to Forge. Keep the `input-archive/` data folder when moving or upgrading an installation.
 
-## Forge Neo extension update plan
+## Forge Neo extension updates
 
-`git_updates.py` accepts a JSON list of checkouts. Each entry supplies a display name, an actual Git root relative to the manifest, the expected GitHub origin, and the release branch. The later Forge Neo launcher can run the same script with a separate manifest before loading extensions. An optional `version_file` path relative to the manifest supplies the release number for the log. Only explicitly listed checkouts are eligible.
-
-Most existing extensions live in this repository's `extensions/` subtree. For those, the Forge Neo integration should pull this shared checkout once and deploy only the listed extension directories into Forge's `extensions/` folder. Stage and validate those updates before replacing installed code and preserve extension settings and local changes. An extension that has its own repository can instead be listed as a dedicated checkout. Forge Neo's own core and third-party extensions stay outside that manifest unless explicitly added.
+[Start Forge with GitHub extension updates](FORGE-EXTENSIONS.md) to select which Forge-side extensions receive updates. Forge Mobile’s own launcher continues to start the mobile companion.
 
 ## Recent fixes
 

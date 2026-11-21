@@ -1,0 +1,18 @@
+/* Gradio 4.40 renders the mobile queue notice as a warning toast. */
+.toast-wrap > div > .toast-body.warning {
+    display: none !important;
+}
+
+/* Exclude the warning's layout wrapper too so it leaves no gap. */
+.toast-wrap > div:has(> .toast-body.warning) {
+    display: none !important;
+}
+
+/* The fixed toast container and the spaces between notices should pass taps through. */
+.toast-wrap {
+    pointer-events: none;
+}
+
+.toast-wrap > div > .toast-body:not(.warning) {
+    pointer-events: auto;
+}

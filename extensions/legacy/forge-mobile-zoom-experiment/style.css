@@ -1,0 +1,103 @@
+/* Forge Mobile Zoom
+   Inline Quicksettings control + Safari/WebKit viewport-width scaling.
+   The zoom UI lives in Forge's normal layout instead of floating over it. */
+
+#forge-mobile-zoom-control {
+    display: none;
+    flex: 0 1 190px;
+    min-width: 156px;
+    max-width: 210px;
+    align-self: flex-end;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--body-text-color, inherit);
+}
+
+#forge-mobile-zoom-control[data-mobile="true"] {
+    display: block;
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-label {
+    margin: 0 0 4px 0;
+    padding: 0;
+    color: var(--block-label-text-color, var(--body-text-color-subdued, inherit));
+    font: inherit;
+    font-size: var(--block-label-text-size, 14px);
+    font-weight: var(--block-label-text-weight, 400);
+    line-height: var(--line-sm, 1.25);
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-buttons {
+    display: grid;
+    grid-template-columns: 42px minmax(58px, 1fr) 42px;
+    gap: 4px;
+    width: 100%;
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-button {
+    min-width: 0;
+    min-height: 40px;
+    margin: 0;
+    padding: 6px 8px;
+    box-sizing: border-box;
+
+    border-width: var(--button-border-width, 1px);
+    border-style: solid;
+    border-color: var(--button-secondary-border-color, var(--border-color-primary, currentColor));
+    border-radius: var(--button-secondary-border-radius, var(--radius-md, 4px));
+    background: var(--button-secondary-background-fill, var(--background-fill-secondary, transparent));
+    color: var(--button-secondary-text-color, var(--body-text-color, inherit));
+    box-shadow: var(--button-secondary-shadow, none);
+
+    font: inherit;
+    font-size: var(--button-medium-text-size, 14px);
+    font-weight: var(--button-medium-text-weight, 600);
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-button:hover:not(:disabled) {
+    border-color: var(--button-secondary-border-color-hover, var(--button-secondary-border-color, var(--border-color-primary, currentColor)));
+    background: var(--button-secondary-background-fill-hover, var(--button-secondary-background-fill, var(--background-fill-secondary, transparent)));
+    color: var(--button-secondary-text-color-hover, var(--button-secondary-text-color, var(--body-text-color, inherit)));
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-button:active:not(:disabled) {
+    background: var(--button-secondary-background-fill-hover, var(--button-secondary-background-fill, var(--background-fill-secondary, transparent)));
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-button:focus-visible {
+    outline: var(--button-border-width, 1px) solid var(--input-border-color-focus, var(--border-color-accent, currentColor));
+    outline-offset: 1px;
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-value {
+    font-variant-numeric: tabular-nums;
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-value[data-bypassed="true"] {
+    color: var(--body-text-color-subdued, inherit);
+}
+
+#forge-mobile-zoom-control .forge-mobile-zoom-button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+/* The inline zoom control should scale together with Quicksettings. Only the
+   separate floating Generate dock is compensated back toward finger size. */
+html[data-forge-mobile-viewport-zoom="true"] #forge-mobile-dock {
+    transform: scale(var(--forge-mobile-viewport-inverse, 1));
+    transform-origin: bottom right;
+}
+
+/* This is a phone tool. Keep desktop Quicksettings exactly as Forge made it. */
+@media (min-width: 901px) {
+    #forge-mobile-zoom-control {
+        display: none !important;
+    }
+}

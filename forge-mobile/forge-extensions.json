@@ -1,0 +1,31 @@
+{
+  "forge-cfg-scheduler": {"source": "extensions/forge-cfg-scheduler"},
+  "forge-controlnet-seed-tools": {"source": "extensions/forge-controlnet-seed-tools"},
+  "forge-lum-experiment": {"source": "extensions/forge-lum-experiment"},
+  "hiresfix-tag-support": {"source": "extensions/hiresfix-tag-support"},
+  "img2img-hires-fix": {"source": "forge-mobile/forge-neo-extensions/img2img-hires-fix"},
+  "forge-mobile-input-metadata": {"source": "forge-mobile/forge-neo-extensions/forge-mobile-input-metadata"},
+  "docker-manager": {"source": "extensions/docker-manager", "aliases": ["forge-dock-manager"]},
+  "rin-theme": {"source": "extensions/rin-theme", "aliases": ["forge-rin-neon-theme"]},
+  "forge-gallery-restore": {"source": "extensions/forge-gallery-restore"},
+  "mobile-quality-of-life": {
+    "source": "extensions/mobile-quality-of-life",
+    "conflicts": ["forge-mobile-native-selects", "forge-mobile-quicksettings", "forge-mobile-zoom-experiment"]
+  },
+  "regional-prompter-tags": {
+    "source": "extensions/sd-webui-regional-prompter",
+    "target": "sd-webui-regional-prompter",
+    "requires": "scripts/rp.py",
+    "files": ["regional_core.py", "scripts/regional_tag.py"]
+  },
+  "forge-disable-warning-popups": {"source": "extensions/legacy/forge-disable-warning-popups"},
+  "forge-mobile-native-selects": {
+    "source": "extensions/legacy/forge-mobile-native-selects", "conflicts": ["mobile-quality-of-life"]
+  },
+  "forge-mobile-quicksettings": {
+    "source": "extensions/legacy/forge-mobile-quicksettings", "conflicts": ["mobile-quality-of-life"]
+  },
+  "forge-mobile-zoom-experiment": {
+    "source": "extensions/legacy/forge-mobile-zoom-experiment", "conflicts": ["mobile-quality-of-life"]
+  }
+}

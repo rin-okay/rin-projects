@@ -28,3 +28,5 @@ These are independent extensions. See the [extension index and installation note
 ## Forge Mobile Client
 
 [Forge Mobile Client](forge-mobile/) runs alongside Forge Neo and checks this repository for updates at launch. See the [Windows install and update instructions](forge-mobile/README.md#install-git-updates).
+
+For selected Forge-side extensions, use the [Forge startup updater](forge-mobile/FORGE-EXTENSIONS.md).

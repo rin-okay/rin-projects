@@ -1,0 +1,56 @@
+/* Mobile-native dropdown replacer for common Forge txt2img/img2img controls. */
+
+.fmns-source-hidden {
+    display: none !important;
+}
+
+.fmns-native-select-host {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.fmns-native-select {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 7px 10px;
+
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--input-border-color, var(--border-color-primary, currentColor));
+    border-radius: var(--input-border-radius, var(--radius-md, 4px));
+    background: var(--input-background-fill, var(--background-fill-primary, Canvas));
+    color: var(--body-text-color, CanvasText);
+    box-shadow: none;
+
+    font: inherit;
+    line-height: 1.25;
+    appearance: auto;
+    -webkit-appearance: menulist;
+}
+
+.fmns-native-select:focus {
+    border-color: var(--input-border-color-focus, var(--border-color-accent, currentColor));
+    outline: none;
+}
+
+.fmns-native-select:disabled {
+    opacity: 0.5;
+}
+
+@media (max-width: 900px) {
+    .fmns-native-select {
+        font-size: 16px !important;
+    }
+
+    #txt2img_prompt textarea,
+    #txt2img_neg_prompt textarea,
+    #img2img_prompt textarea,
+    #img2img_neg_prompt textarea {
+        font-size: 16px !important;
+    }
+}

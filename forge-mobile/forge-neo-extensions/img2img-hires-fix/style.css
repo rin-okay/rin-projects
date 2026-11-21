@@ -1,0 +1,10 @@
+#img2img_hires_fix_manual_button {
+    min-width: 2.5em;
+    max-width: 2.5em;
+    align-self: stretch;
+}
+
+#img2img_hires_fix_manual_button[aria-busy="true"] {
+    cursor: wait;
+    opacity: 0.65;
+}

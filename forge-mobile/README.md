@@ -1,10 +1,20 @@
-# Forge Mobile Client v0.3.22
+# Forge Mobile Client v0.3.23
 
 A standalone companion on port 7862 with the mobile workspace from the HTML preview. Start Forge normally on 7860, then run this companion from its own directory.
 
 The IIB tab opens a separate instance of the installed Infinite Image Browsing frontend and fills the workspace below the mobile tabs.
 
 IIB must be enabled as an extension in the running Forge instance, so its frontend and native Send to controls are available through 7862. The companion uses Forge's IIB asset/API routes through its existing proxy. A separate standalone IIB service on 7861 alone does not provide Forge's native paste controls.
+
+## Set up Img2img Hires Fix and input archiving
+
+Forge Mobile includes Img2img Hires Fix v2.2.1 and the input metadata helper. Both run inside Forge Neo.
+
+1. Stop Forge Neo and Forge Mobile. If changing the enabled Forge extension set, export your mobile workspace first to preserve your current draft.
+2. Run `setup-forge.bat` in the Forge Mobile folder and enter the path to your Forge Neo installation. You can also pass the folder directly with `setup-forge.bat "C:\path\to\Forge Neo"`. Add `--check` to check an installation without copying files.
+3. Start Forge Neo, then start Forge Mobile with `start-mobile.bat`.
+
+Setup installs missing bundled extensions and reuses matching existing copies. If it finds duplicates or a different installed build, it reports the path. Keep a backup outside Forge's extensions folder before choosing to swap builds. Enable the installed extensions in Forge if they were disabled. For IIB, enable Infinite Image Browsing in Forge separately.
 
 ## Start on Windows
 
@@ -43,7 +53,7 @@ The launch log reports `Version installed (v…)` after an update or `No new ver
 
 Forge Mobile includes the Parameters Saver starting with v0.3.22. Restart the companion to load the bundled copy. The bundled code lives in `extensions/parameters-saver/` so Git can update it alongside an existing manual installation at `extensions/input-archive/`.
 
-For archive capture to work, Forge Neo must load the matching metadata helper. If it is already installed, restart only Forge Mobile. Otherwise, copy [`forge-mobile-input-metadata`](forge-neo-extensions/forge-mobile-input-metadata/) from `forge-neo-extensions/` in this checkout into Forge Neo's own `extensions/` directory, then restart Forge Neo and Forge Mobile. Adding a Forge extension changes the component layout, so export your mobile workspace first if you want to keep its current draft.
+For archive capture to work, Forge Neo must load the [bundled metadata helper](forge-neo-extensions/forge-mobile-input-metadata/). The setup above installs it and recognizes the previous manual installation when the files match.
 
 Generate from Forge Mobile with a single img2img source or supported ControlNet inputs. A successful capture writes data to `input-archive/images/` and `input-archive/recipes/` beside `workspace.json`; an output with a saved recipe contains `Forge Mobile input archive: <hash>` in its metadata. IIB can use that reference to restore archived inputs and settings when sending the output back to Forge. Keep the `input-archive/` data folder when moving or upgrading an installation.
 
@@ -102,7 +112,7 @@ If the native IIB extension is unavailable, the tab displays an explanation and 
 
 The mobile workspace relocates the actual Forge components and restores them on Back. Their Gradio event handlers remain responsible for generation, sampler/model selection, prompt styles, img2img uploads, inpainting, ControlNet, seed actions, and gallery operations.
 
-Generate and Hires Fix docks click the existing Forge buttons. Gallery docks select the native gallery image. Hires Fix requires the existing Forge feature or installed enhancer to provide its native button. The companion integrates the existing Img2img Hires Fix extension. Install that extension into Forge if its backend is missing. Its manual gallery action uses the current Hires Fix fields, falling back to the current regular positive and negative prompts per field. Clone regular prompt copies the corresponding regular prompt into the open Hires Fix editor.
+Generate and Hires Fix docks click the existing Forge buttons. Gallery docks select the native gallery image. Hires Fix requires the existing Forge feature or installed enhancer to provide its native button. The companion uses the bundled Img2img Hires Fix extension installed by the setup above. Its manual gallery action uses the current Hires Fix fields, falling back to the current regular positive and negative prompts per field. Clone regular prompt copies the corresponding regular prompt into the open Hires Fix editor.
 
 The LoRAs tab uses Forge's actual cards. Clicking a card uses Forge's own insertion handler. The slider stack reads and edits the resulting <lora:name:weight> prompt tags. Installed LoRA cards, previews, search, and refresh remain supplied by Forge.
 

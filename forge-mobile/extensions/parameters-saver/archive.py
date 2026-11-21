@@ -157,7 +157,8 @@ class InputArchive:
                     continue
                 if info in dep["inputs"]:
                     tab = "img2img" if target == "inpaint" else target
-                    extra = {c for unit in self.cn.get(tab, ()) for c in unit.values()}
+                    extra = {c for unit in self.cn.get(tab, ()) for key, c in unit.items()
+                             if not key.startswith("canvas/")}
                     if tab == "img2img" and self.img_inputs:
                         extra.update(self.img_settings.values())
                         extra.update(c for layers in self.img_for_mode.values() for c in layers)
@@ -245,17 +246,15 @@ class InputArchive:
         result[position] = reference
         return result
 
-    async def restore_value(self, value, headers, file_cache, *, canvas_only=False):
+    async def restore_value(self, value, headers, file_cache):
         if not isinstance(value, dict):
             return value
         digest = value["image"]
         kind = value["kind"]
         data = await asyncio.to_thread(read, self.root / "images", digest, LIMIT)
         mime, suffix = media_type(data)
-        if kind == "canvas" or (canvas_only and suffix == "png"):
+        if kind == "canvas":
             return PNG + base64.b64encode(data).decode()
-        if canvas_only:
-            return None
         if kind != "file":
             raise ValueError("Unknown archive image type")
         if digest in file_cache:
@@ -311,16 +310,9 @@ class InputArchive:
                     tab = "img2img" if target == "inpaint" else target
                     for unit, saved in zip(self.cn.get(tab, ()), record["controlnet"]):
                         for key, c in unit.items():
-                            if key in saved:
-                                values[c] = await self.restore_value(saved[key], headers, cache)
-                        independent = "same_img2img_checkbox"
-                        background = unit.get("canvas/input")
-                        if tab == "txt2img" and background is not None and img and saved.get(independent) is False:
-                            shared_source = await self.restore_value(img["layers"][0], headers, cache, canvas_only=True)
-                            if shared_source:
-                                values[background] = shared_source
-                        if tab == "img2img" and independent in unit and independent not in saved and saved.get("canvas/input"):
-                            values[unit[independent]] = True
+                            # ControlNet canvas images are archived for reference only.
+                            if key in saved and not key.startswith("canvas/") and not isinstance(saved[key], dict):
+                                values[c] = saved[key]
                     if tab == "img2img" and img and self.img_for_mode:
                         mode = self.mode_for_target(img, target)
                         layers = img["layers"] if mode == img["mode"] else [img["layers"][0], None]

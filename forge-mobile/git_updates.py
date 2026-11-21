@@ -14,7 +14,18 @@ def github_repo(url):
     return match[1].lower() if match else None
 
 
-def update_checkout(path, upstream, branch):
+def installed_version(version_file, commit):
+    if version_file is not None:
+        try:
+            version = version_file.read_text(encoding="utf-8").strip()
+            if version:
+                return f"v{version}"
+        except (OSError, UnicodeError):
+            pass
+    return f"commit {commit[:8]}"
+
+
+def update_checkout(path, upstream, branch, version_file=None):
     """Verify a checkout's identity before fetching or moving its branch."""
     expected = github_repo(upstream)
     if expected is None:
@@ -51,12 +62,16 @@ def update_checkout(path, upstream, branch):
     head = git("rev-parse", "HEAD").stdout.strip()
     git("fetch", "--no-tags", "--no-recurse-submodules", "origin", f"refs/heads/{branch}", timeout=25)
     release = git("rev-parse", "FETCH_HEAD").stdout.strip()
+    previous_version = installed_version(version_file, head)
     if head == release:
-        return f"up to date ({head[:8]})"
+        return f"No new version ({previous_version})"
     if git("merge-base", "--is-ancestor", head, release, check=False).returncode:
         return "skipped (local commits or rewritten upstream history)"
     git("merge", "--ff-only", "--no-autostash", "--no-overwrite-ignore", release, timeout=25)
-    return f"updated {head[:8]} to {release[:8]}"
+    version = installed_version(version_file, release)
+    if version == previous_version:
+        return f"No new version ({version})"
+    return f"Version installed ({version})"
 
 
 def main():
@@ -79,7 +94,8 @@ def main():
         name = entry.get("name", "Checkout") if isinstance(entry, dict) else "Checkout"
         try:
             path = (manifest.parent / entry["path"]).resolve()
-            result = update_checkout(path, entry["origin"], entry["branch"])
+            version_file = manifest.parent / entry["version_file"] if "version_file" in entry else None
+            result = update_checkout(path, entry["origin"], entry["branch"], version_file)
         except FileNotFoundError:
             result = "skipped (Git for Windows is not on PATH)"
         except subprocess.TimeoutExpired:

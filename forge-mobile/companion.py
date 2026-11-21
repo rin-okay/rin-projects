@@ -22,6 +22,7 @@ from yarl import URL
 from mobile_extensions import MobileExtensions
 
 HERE = Path(__file__).resolve().parent
+VERSION = (HERE / "VERSION").read_text(encoding="utf-8").strip()
 PREFIX = "/_forge_mobile"
 SUBMIT = re.compile(r"\b(submit_txt2img_upscale|submit_img2img|i2iHiresPrepare|submit)\s*(?:\(|$)")
 INLINE_CONFIG = re.compile(r"window\.gradio_config\s*=\s*")
@@ -701,8 +702,8 @@ class Companion:
         page = body[:match.end()] + safe_config + body[end:]
         script = (
             f'<script>window.forgeMobileRevision={self.workspace.revision};</script>'
-            f'<script src="{PREFIX}/mobile.js?v=0.3.17"></script>'
-            f'<script defer src="{PREFIX}/client-loader.js?v=0.3.17"></script>'
+            f'<script src="{PREFIX}/mobile.js?v={VERSION}"></script>'
+            f'<script defer src="{PREFIX}/client-loader.js?v={VERSION}"></script>'
         )
         return page.replace("</head>", script + "</head>", 1)
 
@@ -877,7 +878,7 @@ def main():
     if upstream.scheme not in {"http", "https"} or not upstream.netloc or upstream.path not in {"", "/"}:
         parser.error("--forge must be an HTTP(S) origin without a subpath")
     logging.basicConfig(level=logging.INFO)
-    print(f"Open http://<your-PC-IP>:{args.port}.", flush=True)
+    print(f"[Forge Mobile Client] Installed version: v{VERSION}. Open http://<your-PC-IP>:{args.port}.", flush=True)
     web.run_app(create_app(args.forge, Workspace(HERE / "workspace.json")),
                 host=args.host, port=args.port, access_log=None)
 

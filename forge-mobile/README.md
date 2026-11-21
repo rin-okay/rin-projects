@@ -1,4 +1,4 @@
-# Forge Mobile Client v0.3.17
+# Forge Mobile Client v0.3.18
 
 A standalone companion on port 7862 with the mobile workspace from the HTML preview. Start Forge normally on 7860, then run this companion from its own directory.
 
@@ -37,9 +37,11 @@ If migrating from a ZIP, stop the old companion and copy `workspace.json`, `mobi
 
 Each launch fetches `main` from the configured origin and applies a fast-forward update before starting the app. A download failure, wrong checkout, or local Git changes skips the update and continues with the installed copy. A non-Git installation launches normally. Run `set FORGE_SKIP_UPDATES=1` in Command Prompt before running the batch file to bypass updates in that shell.
 
+The launch log reports `Version installed (v…)` after an update or `No new version (v…)` when the checkout is current. The companion also prints its installed version at startup.
+
 ## Forge Neo extension update plan
 
-`git_updates.py` accepts a JSON list of checkouts. Each entry supplies a display name, an actual Git root relative to the manifest, the expected GitHub origin, and the release branch. The later Forge Neo launcher can run the same script with a separate manifest before loading extensions. Only explicitly listed checkouts are eligible.
+`git_updates.py` accepts a JSON list of checkouts. Each entry supplies a display name, an actual Git root relative to the manifest, the expected GitHub origin, and the release branch. The later Forge Neo launcher can run the same script with a separate manifest before loading extensions. An optional `version_file` path relative to the manifest supplies the release number for the log. Only explicitly listed checkouts are eligible.
 
 Most existing extensions live in this repository's `extensions/` subtree. For those, the Forge Neo integration should pull this shared checkout once and deploy only the listed extension directories into Forge's `extensions/` folder. Stage and validate those updates before replacing installed code and preserve extension settings and local changes. An extension that has its own repository can instead be listed as a dedicated checkout. Forge Neo's own core and third-party extensions stay outside that manifest unless explicitly added.
 

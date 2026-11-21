@@ -1,0 +1,7 @@
+{
+  "id": "iib-bridge",
+  "name": "Infinite Image Browsing",
+  "requires": ["mobile-workspace"],
+  "styles": ["style.css"],
+  "scripts": ["bridge.js"]
+}

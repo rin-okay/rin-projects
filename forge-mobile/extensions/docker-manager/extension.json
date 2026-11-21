@@ -1,0 +1,10 @@
+{
+  "id": "docker-manager",
+  "name": "Docker Manager",
+  "styles": [
+    "style.css"
+  ],
+  "scripts": [
+    "javascript/dock-manager.js"
+  ]
+}

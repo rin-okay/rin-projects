@@ -1,0 +1,79 @@
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-main {
+    display: flex;
+    width: 100%;
+    gap: var(--fdm-gap, 7px);
+}
+
+.fdm-dock-shell[data-dock-id="generate"] button {
+    min-width: 0;
+    min-height: 44px;
+    margin: 0;
+    padding: 8px 10px;
+    box-sizing: border-box;
+
+    border-width: var(--button-border-width, 1px);
+    border-style: solid;
+    border-radius: var(--button-secondary-border-radius, var(--radius-md, 4px));
+    box-shadow: var(--button-secondary-shadow, none);
+
+    font: inherit;
+    font-size: var(--button-medium-text-size, 14px);
+    font-weight: var(--button-medium-text-weight, 600);
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.fdm-dock-shell[data-dock-id="generate"] button:disabled {
+    cursor: default;
+    opacity: 0.62;
+}
+
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-primary {
+    flex: 3 1 0;
+    background: var(--button-primary-background-fill);
+    color: var(--button-primary-text-color);
+    border-color: var(--button-primary-border-color);
+    border-radius: var(--button-primary-border-radius, var(--radius-md, 4px));
+    box-shadow: var(--button-primary-shadow, none);
+}
+
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-secondary {
+    background: var(--button-secondary-background-fill);
+    color: var(--button-secondary-text-color);
+    border-color: var(--button-secondary-border-color);
+}
+
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-secondary {
+    flex: 1 1 0;
+    font-size: 20px;
+}
+
+
+.fdm-dock-shell[data-dock-id="generate"][data-state="running"] .fdm-generate-primary,
+.fdm-dock-shell[data-dock-id="generate"][data-state="stopping"] .fdm-generate-primary,
+.fdm-dock-shell[data-dock-id="generate"][data-state="running"] .fdm-generate-skip,
+.fdm-dock-shell[data-dock-id="generate"][data-state="stopping"] .fdm-generate-skip {
+    flex: 1 1 0;
+    padding-inline: 4px;
+    font-size: var(--button-medium-text-size, 14px);
+    background: var(--button-secondary-background-fill);
+    color: var(--button-secondary-text-color);
+    border-color: var(--button-secondary-border-color);
+    border-radius: var(--button-secondary-border-radius, var(--radius-md, 4px));
+    box-shadow: var(--button-secondary-shadow, none);
+}
+
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-primary:hover:not(:disabled) {
+    background: var(--button-primary-background-fill-hover, var(--button-primary-background-fill));
+    color: var(--button-primary-text-color-hover, var(--button-primary-text-color));
+    border-color: var(--button-primary-border-color-hover, var(--button-primary-border-color));
+}
+
+.fdm-dock-shell[data-dock-id="generate"][data-state="running"] .fdm-generate-primary:hover:not(:disabled),
+.fdm-dock-shell[data-dock-id="generate"] .fdm-generate-secondary:hover:not(:disabled) {
+    background: var(--button-secondary-background-fill-hover, var(--button-secondary-background-fill));
+    color: var(--button-secondary-text-color-hover, var(--button-secondary-text-color));
+    border-color: var(--button-secondary-border-color-hover, var(--button-secondary-border-color));
+}

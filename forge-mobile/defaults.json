@@ -1,0 +1,65 @@
+{
+  "mobile-layout": {
+    "split": 0.6854436689930209,
+    "locked": false,
+    "barHidden": false,
+    "tab": "panels",
+    "panels": {
+      "txt2img": "settings"
+    },
+    "showStyles": false,
+    "generateButton": "disabled",
+    "promptExtras": false,
+    "negative": false,
+    "enableHiresPrompt": false,
+    "hiresInParams": false,
+    "hiresPrompt": false,
+    "uiScale": 85,
+    "loraMin": -1,
+    "loraMax": 1
+  },
+  "mobile-docks": {
+    "version": 2,
+    "locked": false,
+    "labels": false,
+    "docks": [
+      {
+        "instance_id": "full-gallery-preview",
+        "dock_id": "full-gallery-preview",
+        "width": "half",
+        "side": "left",
+        "y": 1,
+        "bottom": 5,
+        "ordinal": 1,
+        "labels": false
+      },
+      {
+        "instance_id": "generate",
+        "dock_id": "generate",
+        "width": "half",
+        "side": "right",
+        "y": 1,
+        "bottom": 5,
+        "ordinal": 1,
+        "labels": false
+      }
+    ]
+  },
+  "docks": {
+    "version": 2,
+    "locked": false,
+    "labels": false,
+    "docks": []
+  },
+  "controls": {
+    "txt2img_prompt": "",
+    "txt2img_neg_prompt": "",
+    "txt2img_hr_prompt": "",
+    "txt2img_hr_neg_prompt": "",
+    "img2img_prompt": "",
+    "img2img_neg_prompt": "",
+    "img2img_hr_prompt": "",
+    "img2img_hr_neg_prompt": "",
+    "txt2img_subseed_show": true
+  }
+}

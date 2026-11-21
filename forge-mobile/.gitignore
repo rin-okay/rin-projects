@@ -1,0 +1,9 @@
+/.venv/
+/workspace.json
+/workspace.tmp
+/mobile-settings.json
+/mobile-settings.tmp
+/input-archive/
+/extensions/input-archive/
+__pycache__/
+*.py[cod]

@@ -1,0 +1,44 @@
+/* IIB fills the visible workspace beneath the mobile tab row. */
+#mobile-overlay[data-active-tab="iib"] #mobile-upper-content > .mobile-settings-scroll {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+#mobile-overlay #mobile-iib-view {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-width: none;
+  overflow: hidden;
+}
+#mobile-iib-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 0;
+  border: 0;
+  background: #141414;
+}
+/* Preserve IIB's native viewport dimensions inside the scaled upper UI. */
+#mobile-iib-frame {
+  width: calc(100% * var(--mobile-ui-zoom, 1));
+  height: calc(100% * var(--mobile-ui-zoom, 1));
+  flex: none;
+  transform: scale(var(--mobile-ui-inverse, 1)); transform-origin: top left;
+}
+.mobile-iib-status {
+  margin: 16px;
+  color: var(--body-text-color);
+  overflow-wrap: anywhere;
+}
+.mobile-iib-retry {
+  align-self: flex-start;
+  margin: 0 16px 16px;
+  padding: 8px 16px;
+}

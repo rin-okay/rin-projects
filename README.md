@@ -23,3 +23,8 @@ These are independent extensions. See the [extension index and installation note
 ## Tools
 
 - [rin's regional prompting helper](extensions/regional-prompting-helper.html) - standalone HTML editor for the Regional Prompter prompt-tag overlay. Download and open it in your browser.
+
+
+## Forge Mobile Client
+
+[Forge Mobile Client](forge-mobile/) runs alongside Forge Neo and checks this repository for updates at launch. See the [Windows install and update instructions](forge-mobile/README.md#install-git-updates).

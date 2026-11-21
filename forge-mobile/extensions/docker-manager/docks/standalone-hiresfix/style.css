@@ -1,0 +1,22 @@
+/* Cheeky click confirmation: a tiny celebratory shimmy while the icon flips to 💫. */
+.fdm-dock-shell[data-dock-id="standalone-hiresfix"] .fdm-standalone-hiresfix-button[data-clicked="true"] {
+    animation: fdm-hiresfix-cheeky-pop 720ms cubic-bezier(.2,.9,.25,1);
+    background: var(--button-primary-background-fill, var(--button-secondary-background-fill, transparent));
+    border-color: var(--button-primary-border-color, var(--border-color-accent, currentColor));
+    color: var(--button-primary-text-color, var(--button-secondary-text-color, inherit));
+}
+
+@keyframes fdm-hiresfix-cheeky-pop {
+    0%   { transform: scale(1) rotate(0deg); }
+    18%  { transform: scale(1.16) rotate(-12deg); }
+    38%  { transform: scale(1.08) rotate(12deg); }
+    58%  { transform: scale(1.12) rotate(-7deg); }
+    78%  { transform: scale(1.04) rotate(5deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fdm-dock-shell[data-dock-id="standalone-hiresfix"] .fdm-standalone-hiresfix-button[data-clicked="true"] {
+        animation: none;
+    }
+}

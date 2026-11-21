@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Forge Mobile tap report</title>
+<style>body{font:16px system-ui;background:#151116;color:#f2e8f0;margin:1rem}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style>
+<h1>Forge Mobile tap report</h1>
+<h2>Recent touch events</h2><pre id="trace"></pre>
+<h2>Hit-test warnings</h2><pre id="report"></pre>
+<script>
+const report = document.getElementById('report');
+try {
+  const trace = JSON.parse(localStorage.getItem('forge-mobile-touch-trace-v1') || '[]');
+  document.getElementById('trace').textContent = trace.length ? JSON.stringify(trace, null, 2) : 'No touch recorder startup saved for this browser.';
+  const entries = JSON.parse(localStorage.getItem('forge-mobile-missed-taps-v2') || '[]');
+  report.textContent = entries.length ? JSON.stringify(entries, null, 2) : 'No missed taps recorded in this browser.';
+} catch { report.textContent = 'This browser could not read the saved tap report.'; }
+</script></html>

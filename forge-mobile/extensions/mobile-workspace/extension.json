@@ -1,0 +1,16 @@
+{
+  "id": "mobile-workspace",
+  "name": "Mobile Workspace",
+  "requires": [
+    "docker-manager"
+  ],
+  "styles": [
+    "style.css"
+  ],
+  "scripts": [
+    "native-adapter.js",
+    "workspace.js",
+    "tap-report.js"
+  ],
+  "templates": ["workspace.html"]
+}

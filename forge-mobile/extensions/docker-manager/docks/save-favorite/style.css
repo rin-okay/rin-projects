@@ -1,0 +1,29 @@
+/* Save result feedback. */
+.fdm-dock-shell[data-dock-id="save-favorite"] .fdm-save-favorite-button[data-success="true"] {
+    background: var(--button-primary-background-fill, var(--border-color-accent, currentColor)) !important;
+    border-color: var(--button-primary-border-color, var(--border-color-accent, currentColor)) !important;
+    color: var(--button-primary-text-color, #fff) !important;
+    opacity: 1 !important;
+    transform: scale(1.04);
+    transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.fdm-dock-shell[data-dock-id="save-favorite"] .fdm-save-favorite-button[data-pending="true"] {
+    opacity: 1 !important;
+    animation: fdm-save-favorite-spin 0.65s linear infinite;
+}
+
+@keyframes fdm-save-favorite-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fdm-dock-shell[data-dock-id="save-favorite"] .fdm-save-favorite-button[data-success="true"] {
+        transform: none;
+        transition: none;
+    }
+
+    .fdm-dock-shell[data-dock-id="save-favorite"] .fdm-save-favorite-button[data-pending="true"] {
+        animation: none;
+    }
+}

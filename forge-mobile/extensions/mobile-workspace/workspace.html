@@ -1,0 +1,90 @@
+<section id="mobile-overlay" data-mobile-build="0.3.17" class="gradio-container" role="dialog" aria-modal="true" aria-label="Mobile workspace" hidden>
+  <header id="mobile-bar" class="mobile-bar">
+    <div class="mobile-bar-clip">
+      <div class="mobile-actions">
+        <select id="mobile-mode" aria-label="Generation mode"><option>txt2img</option><option>img2img</option></select>
+        <button type="button" id="mobile-exit" aria-label="Back to Forge">Back</button>
+      </div>
+    </div>
+  </header>
+  <div id="mobile-layout">
+    <section id="mobile-upper" aria-label="Generation controls">
+      <div id="mobile-upper-content">
+      <button type="button" id="mobile-prompt-done">Done</button>
+      <div class="mobile-tab-row">
+        <div class="mobile-tabs" role="tablist" aria-label="Generation controls" aria-owns="mobile-tab-iib">
+          <button type="button" id="mobile-tab-prompt" role="tab" aria-controls="mobile-prompt">Prompt</button>
+          <button type="button" id="mobile-tab-params" role="tab" aria-controls="mobile-params">Params</button>
+          <button type="button" id="mobile-tab-loras" role="tab" aria-controls="mobile-loras">LoRAs</button>
+          <button type="button" id="mobile-tab-panels" role="tab" aria-controls="mobile-panels">Panels</button>
+        </div>
+        <button type="button" id="mobile-tab-iib" title="Infinite Image Browsing" role="tab" aria-controls="mobile-iib-view" aria-label="Infinite Image Browsing">IIB</button>
+        <button type="button" id="mobile-toggle-bar" aria-label="Hide top bar" aria-controls="mobile-bar" aria-expanded="true">Hide</button>
+      </div>
+      <div class="mobile-settings-scroll">
+        <div id="mobile-prompt" role="tabpanel" aria-labelledby="mobile-tab-prompt"></div>
+        <div id="mobile-iib-view" role="tabpanel" aria-labelledby="mobile-tab-iib" hidden></div>
+        <div id="mobile-params" role="tabpanel" aria-labelledby="mobile-tab-params"></div>
+        <div id="mobile-loras" role="tabpanel" aria-labelledby="mobile-tab-loras">
+          <div id="mobile-lora-list" aria-label="Enabled LoRAs"></div>
+          <div id="mobile-lora-browser"></div>
+        </div>
+        <div id="mobile-panels" role="tabpanel" aria-labelledby="mobile-tab-panels">
+          <select id="mobile-panel-picker" aria-label="Panel"></select>
+          <div id="mobile-panel-body">
+            <div id="mobile-settings" class="mobile-options" hidden>
+            <label class="mobile-generate-option" for="mobile-generate-button">Generate button
+              <select id="mobile-generate-button">
+                <option value="bottom-locked">Bottom locked</option>
+                <option value="disabled">Disabled</option>
+              </select>
+            </label>
+            <div class="mobile-ui-scale" role="group" aria-label="UI scale">
+              <span>UI scale</span>
+              <button type="button" class="gradio-button" id="mobile-scale-down" aria-label="Decrease UI scale">−</button>
+              <output id="mobile-ui-scale">85%</output>
+              <button type="button" class="gradio-button" id="mobile-scale-up" aria-label="Increase UI scale">+</button>
+            </div>
+            <fieldset class="mobile-lora-bounds">
+              <legend>LoRA weight range</legend>
+              <label for="mobile-lora-min">Minimum <input type="number" step="any" id="mobile-lora-min"></label>
+              <label for="mobile-lora-max">Maximum <input type="number" step="any" id="mobile-lora-max"></label>
+            </fieldset>
+            <div class="mobile-settings-file" role="group" aria-label="Settings file">
+              <button type="button" class="gradio-button" id="mobile-save-settings">Export settings</button>
+              <button type="button" class="gradio-button" id="mobile-load-settings">Import settings</button>
+              <input type="file" id="mobile-settings-file" accept=".json,application/json" hidden>
+            </div>
+            <div class="mobile-option-pair">
+              <label class="checkbox gradio-checkbox"><input type="checkbox" id="mobile-prompt-extras">Prompt extras</label>
+              <label class="checkbox gradio-checkbox"><input type="checkbox" id="mobile-show-styles">Show styles dropdown</label>
+              <label class="checkbox gradio-checkbox"><input type="checkbox" id="mobile-enable-hires-prompt">Enable Hires Fix prompt</label>
+              <label class="checkbox gradio-checkbox"><input type="checkbox" id="mobile-hires-in-params">Keep Hires Fix in Params</label>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="mobile-generate-slot">
+        <button type="button" class="gradio-button" id="mobile-negative-toggle" aria-controls="mobile-prompt" aria-pressed="false">Negative<br> prompt</button>
+        <button type="button" class="gradio-button" id="mobile-hires-toggle" aria-controls="mobile-prompt" aria-pressed="false" hidden>Normal</button>
+
+        <div id="mobile-generation-actions"></div>
+      </div>
+      </div>
+      <button type="button" class="gradio-button" id="mobile-clone-prompt" hidden>Clone regular prompt</button>
+      <span id="mobile-prompt-subtitle" aria-hidden="true" hidden></span>
+      <progress id="mobile-generation-progress" max="1" aria-label="Generation progress" hidden></progress>
+    </section>
+    <div id="mobile-divider" role="separator" tabindex="0" aria-label="Workspace split" aria-description="Double-tap or press Enter to toggle the lock. Use arrow keys to resize." aria-orientation="horizontal" aria-controls="mobile-upper" aria-valuemin="24" aria-valuemax="76"><span aria-hidden="true"></span></div>
+    <section class="mobile-lower" aria-label="Dock workspace">
+      <div id="mobile-canvas">
+        <div class="mobile-empty">
+          <div class="mobile-tiles" aria-hidden="true"><i></i><i></i><i></i></div>
+          <p>Your docks go here</p>
+          <small>Open a dock in Panels → Docker Manager, then drag it into place.</small>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>

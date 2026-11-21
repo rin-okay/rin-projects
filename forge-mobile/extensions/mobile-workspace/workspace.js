@@ -6,6 +6,9 @@
   const byId = id => document.getElementById(id);
   const overlay = byId('mobile-overlay');
   const promptPanel = byId('mobile-prompt');
+  const paramsPanel = byId('mobile-params');
+  const hiresDivider = document.createElement('hr');
+  hiresDivider.className = 'mobile-hires-divider';
   const promptSubtitle = byId('mobile-prompt-subtitle');
   const upper = byId('mobile-upper');
   const topScroll = overlay.querySelector('.mobile-settings-scroll');
@@ -79,6 +82,7 @@
   }
 
   function restoreControls() {
+    hiresDivider.remove();
     for (const { node, marker, hidden } of moved.reverse()) {
       marker.replaceWith(node);
       node.hidden = hidden;
@@ -168,14 +172,14 @@
         // Gradio positions the column's status tracker against its native parent.
         // Its idle state uses opacity, so a display check alone also moves it.
         if (node.matches('.wrap.default, .wrap.center')) continue;
-        if (node !== hires && !node.hidden && getComputedStyle(node).display !== 'none') place(node, byId('mobile-params'));
+        if (node !== hires && !node.hidden && getComputedStyle(node).display !== 'none') place(node, paramsPanel);
       }
     }
     if (hires) {
       if (view.hiresInParams) {
-        place(hires, byId('mobile-params'));
+        place(hires, paramsPanel);
         // It may have travelled inside a parameter wrapper; append it last.
-        byId('mobile-params').append(hires);
+        paramsPanel.append(hiresDivider, hires);
         hires.hidden = false;
         hires.classList.add('fm-expanded-panel');
       } else if (!moved.some(item => item.node === hires)) addPanel(hires, 'Hires Fix', 'hires');

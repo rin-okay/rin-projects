@@ -501,6 +501,11 @@ button.tutorial-clear { position:fixed; z-index:20000; right:calc(16px + env(saf
   margin-bottom: 10px;
 }
 #mobile-overlay #mobile-params > div { min-width: 0 !important; }
+#mobile-overlay #mobile-params > .mobile-hires-divider {
+  margin: 10px 0 8px;
+  border: 0;
+  border-top: 1px solid var(--mobile-line);
+}
 #mobile-overlay #mobile-prompt .generate-box { min-width: 0 !important; width: 100%; }
 #mobile-overlay .mobile-options { display: flex; flex-direction: column; gap: 10px; }
 #mobile-overlay .mobile-options :is(select, button, input) { max-width: 100%; }

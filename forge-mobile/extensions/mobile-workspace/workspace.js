@@ -277,6 +277,40 @@
     }
   }
 
+  const hiresMenuInput = '#mobile-params > #img2img_hires_fix_extension .gradio-dropdown input[aria-expanded="true"]';
+  let hiresMenuFrame = 0;
+
+  function fitHiresMenu() {
+    hiresMenuFrame = 0;
+    if (overlay.hidden || paramsPanel.hidden) return;
+    const anchor = paramsPanel.querySelector(hiresMenuInput)?.closest('.wrap');
+    const menu = anchor?.querySelector(':scope > .options');
+    if (!menu) return;
+
+    const pane = topScroll.getBoundingClientRect();
+    const visual = window.visualViewport;
+    const top = Math.max(pane.top, visual?.offsetTop ?? 0);
+    const bottom = Math.min(pane.bottom, visual ? visual.offsetTop + visual.height : window.innerHeight);
+    const scale = view.uiScale / 100;
+    let field = anchor.getBoundingClientRect();
+    // A newly opened field can be partly clipped by the split or keyboard.
+    if (!menu.dataset.mobileMenuSide && (field.top < top || field.bottom > bottom)) {
+      topScroll.scrollTop += ((field.top + field.bottom) - (top + bottom)) / (2 * scale);
+      field = anchor.getBoundingClientRect();
+    }
+    const above = field.top - top;
+    const below = bottom - field.bottom;
+    const opensAbove = above > below;
+    menu.dataset.mobileMenuSide = opensAbove ? 'above' : 'below';
+    menu.style.setProperty('--mobile-menu-height', Math.max(0, Math.floor((Math.max(above, below) - 4) / scale)) + 'px');
+  }
+
+  function scheduleHiresMenu() {
+    if (!hiresMenuFrame && !overlay.hidden && !paramsPanel.hidden) {
+      hiresMenuFrame = requestAnimationFrame(fitHiresMenu);
+    }
+  }
+
   function renderSplit() {
     layout.style.setProperty('--lower-share', String(1 - view.split));
     const percent = Math.round(view.split * 100);
@@ -880,11 +914,18 @@
   new ResizeObserver(fitPromptFields).observe(topScroll);
   document.fonts?.ready.then(fitPromptFields);
   topScroll.addEventListener('scroll', schedulePromptSubtitle, { passive: true });
+  topScroll.addEventListener('scroll', scheduleHiresMenu, { passive: true });
+  window.visualViewport?.addEventListener('resize', scheduleHiresMenu);
+  window.visualViewport?.addEventListener('scroll', scheduleHiresMenu);
+  new MutationObserver(records => {
+    if (records.some(({ target }) => target.matches(hiresMenuInput))) scheduleHiresMenu();
+  }).observe(paramsPanel, { subtree: true, attributes: true, attributeFilter: ['aria-expanded'] });
   promptPanel.addEventListener('input', schedulePromptSubtitle);
   const promptSubtitleObserver = new ResizeObserver(schedulePromptSubtitle);
   promptSubtitleObserver.observe(topScroll);
   new ResizeObserver(() => {
     upper.style.setProperty('--mobile-scrollbar-width', (topScroll.offsetWidth - topScroll.clientWidth) + 'px');
+    scheduleHiresMenu();
   }).observe(topScroll);
   promptSubtitleObserver.observe(promptPanel);
   const dockResizeObserver = new ResizeObserver(() => window.ForgeMobileDockManager?.repositionWorkspace());

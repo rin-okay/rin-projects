@@ -386,6 +386,27 @@ button.tutorial-clear { position:fixed; z-index:20000; right:calc(16px + env(saf
   box-shadow: none;
 }
 #mobile-overlay .gradio-dropdown .options .item { border-radius: 0px; }
+/* Anchor the native menu to its field inside the scaled, scrolling Params pane. */
+#mobile-overlay #mobile-params > #img2img_hires_fix_extension .gradio-dropdown .options[data-mobile-menu-side] {
+  position: absolute;
+  inset-inline: 0;
+  width: 100% !important;
+  min-width: 0;
+  max-height: var(--mobile-menu-height) !important;
+  margin: 0;
+  overscroll-behavior: contain;
+}
+#mobile-overlay #mobile-params > #img2img_hires_fix_extension .gradio-dropdown .options[data-mobile-menu-side="below"] {
+  top: 100% !important;
+  bottom: auto !important;
+}
+#mobile-overlay #mobile-params > #img2img_hires_fix_extension .gradio-dropdown .options[data-mobile-menu-side="above"] {
+  top: auto !important;
+  bottom: 100% !important;
+}
+#mobile-overlay #mobile-params > #img2img_hires_fix_extension .gradio-dropdown .options[data-mobile-menu-side] .item {
+  width: 100% !important;
+}
 #mobile-overlay :is(.gradio-dropdown .options .item.selected, [role="listbox"] [role="option"][aria-selected="true"]) {
   background: #2d1e2e !important;
   color: #f2e8f0 !important;

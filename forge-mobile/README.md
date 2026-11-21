@@ -1,4 +1,4 @@
-# Forge Mobile Client v0.3.20
+# Forge Mobile Client v0.3.21
 
 A standalone companion on port 7862 with the mobile workspace from the HTML preview. Start Forge normally on 7860, then run this companion from its own directory.
 

@@ -6,9 +6,6 @@
   const byId = id => document.getElementById(id);
   const overlay = byId('mobile-overlay');
   const promptPanel = byId('mobile-prompt');
-  const paramsPanel = byId('mobile-params');
-  const hiresDivider = document.createElement('hr');
-  hiresDivider.className = 'mobile-hires-divider';
   const promptSubtitle = byId('mobile-prompt-subtitle');
   const upper = byId('mobile-upper');
   const topScroll = overlay.querySelector('.mobile-settings-scroll');
@@ -40,9 +37,6 @@
   const hiresToggle = byId('mobile-hires-toggle');
   const clonePrompt = byId('mobile-clone-prompt');
   const generationActions = byId('mobile-generation-actions');
-  const runningActions = byId('mobile-running-actions');
-  const stopButton = byId('mobile-stop-generation');
-  const skipButton = byId('mobile-skip-generation');
   const enableHiresPrompt = byId('mobile-enable-hires-prompt');
   const hiresInParams = byId('mobile-hires-in-params');
   const scaleDown = byId('mobile-scale-down');
@@ -85,8 +79,6 @@
   }
 
   function restoreControls() {
-    generationObserver.disconnect();
-    hiresDivider.remove();
     for (const { node, marker, hidden } of moved.reverse()) {
       marker.replaceWith(node);
       node.hidden = hidden;
@@ -116,23 +108,6 @@
     return tab + (negative ? '_neg_prompt' : '_prompt');
   }
 
-  function syncGenerationActions() {
-    const visible = action => {
-      const button = byId(mountedMode + '_' + action);
-      return button && !button.hidden && getComputedStyle(button).display !== 'none';
-    };
-    const stopping = visible('interrupting');
-    const running = Boolean(stopping || visible('interrupt'));
-    generationActions.toggleAttribute('data-running', running);
-    runningActions.hidden = !running;
-    stopButton.disabled = Boolean(stopping);
-    skipButton.disabled = Boolean(stopping) || !visible('skip');
-  }
-
-  const generationObserver = new MutationObserver(syncGenerationActions);
-  stopButton.addEventListener('click', () => byId(mountedMode + '_interrupt')?.click());
-  skipButton.addEventListener('click', () => byId(mountedMode + '_skip')?.click());
-
   function mountControls() {
     const tab = nativeTab();
     mode.value = tab;
@@ -161,14 +136,9 @@
         node.classList.add(className);
       }
     }
-    // Forge positions its native Stop and Skip over its own Generate box.
-    // Keep them there and mirror their state within the mobile button's slot.
-    place(byId(tab + '_generate'), generationActions);
-    for (const action of ['interrupt', 'interrupting', 'skip']) {
-      const button = byId(tab + '_' + action);
-      if (button) generationObserver.observe(button, { attributes: true, attributeFilter: ['style', 'class', 'hidden'] });
+    for (const action of ['generate', 'interrupt', 'interrupting', 'skip']) {
+      place(byId(tab + '_' + action), generationActions);
     }
-    syncGenerationActions();
 
     const model = byId('quicksettings');
     place(model, panelBody);
@@ -198,14 +168,14 @@
         // Gradio positions the column's status tracker against its native parent.
         // Its idle state uses opacity, so a display check alone also moves it.
         if (node.matches('.wrap.default, .wrap.center')) continue;
-        if (node !== hires && !node.hidden && getComputedStyle(node).display !== 'none') place(node, paramsPanel);
+        if (node !== hires && !node.hidden && getComputedStyle(node).display !== 'none') place(node, byId('mobile-params'));
       }
     }
     if (hires) {
       if (view.hiresInParams) {
-        place(hires, paramsPanel);
+        place(hires, byId('mobile-params'));
         // It may have travelled inside a parameter wrapper; append it last.
-        paramsPanel.append(hiresDivider, hires);
+        byId('mobile-params').append(hires);
         hires.hidden = false;
         hires.classList.add('fm-expanded-panel');
       } else if (!moved.some(item => item.node === hires)) addPanel(hires, 'Hires Fix', 'hires');
@@ -277,40 +247,6 @@
     }
   }
 
-  const hiresMenuInput = '#mobile-params > #img2img_hires_fix_extension .gradio-dropdown input[aria-expanded="true"]';
-  let hiresMenuFrame = 0;
-
-  function fitHiresMenu() {
-    hiresMenuFrame = 0;
-    if (overlay.hidden || paramsPanel.hidden) return;
-    const anchor = paramsPanel.querySelector(hiresMenuInput)?.closest('.wrap');
-    const menu = anchor?.querySelector(':scope > .options');
-    if (!menu) return;
-
-    const pane = topScroll.getBoundingClientRect();
-    const visual = window.visualViewport;
-    const top = Math.max(pane.top, visual?.offsetTop ?? 0);
-    const bottom = Math.min(pane.bottom, visual ? visual.offsetTop + visual.height : window.innerHeight);
-    const scale = view.uiScale / 100;
-    let field = anchor.getBoundingClientRect();
-    // A newly opened field can be partly clipped by the split or keyboard.
-    if (!menu.dataset.mobileMenuSide && (field.top < top || field.bottom > bottom)) {
-      topScroll.scrollTop += ((field.top + field.bottom) - (top + bottom)) / (2 * scale);
-      field = anchor.getBoundingClientRect();
-    }
-    const above = field.top - top;
-    const below = bottom - field.bottom;
-    const opensAbove = above > below;
-    menu.dataset.mobileMenuSide = opensAbove ? 'above' : 'below';
-    menu.style.setProperty('--mobile-menu-height', Math.max(0, Math.floor((Math.max(above, below) - 4) / scale)) + 'px');
-  }
-
-  function scheduleHiresMenu() {
-    if (!hiresMenuFrame && !overlay.hidden && !paramsPanel.hidden) {
-      hiresMenuFrame = requestAnimationFrame(fitHiresMenu);
-    }
-  }
-
   function renderSplit() {
     layout.style.setProperty('--lower-share', String(1 - view.split));
     const percent = Math.round(view.split * 100);
@@ -343,9 +279,6 @@
     fitGalleryTrack();
   }
 
-  const nativePromptSizing = CSS.supports('field-sizing', 'content');
-  let promptResizeFrame = 0;
-
   function fitPromptFields() {
     if (overlay.hidden || promptPanel.hidden) return;
     const scrollStyle = getComputedStyle(topScroll);
@@ -353,12 +286,6 @@
       - (parseFloat(scrollStyle.paddingTop) || 0) - (parseFloat(scrollStyle.paddingBottom) || 0);
     const zoom = view.uiScale / 100;
     for (const field of promptPanel.querySelectorAll('.prompt-box:not([hidden]) textarea')) {
-      if (nativePromptSizing) {
-        const surrounding = (promptPanel.getBoundingClientRect().height - field.getBoundingClientRect().height) / zoom;
-        const height = Math.ceil(Math.max(52, available - Math.max(0, surrounding)));
-        field.style.setProperty('--mobile-prompt-height', height + 'px');
-        continue;
-      }
       const original = { height: field.style.height, minHeight: field.style.minHeight, flex: field.style.flex };
       // Measure natural content and surrounding controls without a previous
       // minimum feeding back into the next resize. All dimensions below are
@@ -475,6 +402,64 @@
     });
   }
 
+  const tokenObserver = new MutationObserver(renderPromptValidity);
+  let syntaxTimer;
+  let syntaxVersion = 0;
+
+  function promptCounter() {
+    const tab = mode.value;
+    const hires = !clonePrompt.hidden;
+    const side = view.negative ? 'negative_token_counter' : 'token_counter';
+    const box = byId(promptId(tab, hires, view.negative));
+    return box?.querySelector('.token-counter') || (hires
+      ? byId(tab + '_hr_' + side) || (tab === 'txt2img' && byId('hr_' + side))
+      : byId(tab + '_' + side));
+  }
+
+  function renderPromptValidity() {
+    const counter = promptCounter();
+    if (!counter) return;
+    promptSubtitle.classList.toggle('fm-prompt-error', counter.matches('.error')
+      || Boolean(counter.querySelector('.error')) || /\berror\b/i.test(counter.textContent));
+  }
+
+  function validateHiresPrompt() {
+    clearTimeout(syntaxTimer);
+    const version = ++syntaxVersion;
+    if (clonePrompt.hidden || promptCounter()) return;
+    const tab = mode.value;
+    const field = byId(promptId(tab, true, view.negative))?.querySelector('textarea');
+    if (!field) return;
+    const prompt = promptId(tab, false, view.negative);
+    const text = field.value;
+    const stepField = byId(tab === 'img2img' ? 'img2img_hires_fix_steps' : 'txt2img_hires_steps');
+    const steps = Number(stepField?.querySelector('input[type="number"]')?.value);
+    syntaxTimer = setTimeout(async () => {
+      try {
+        const response = await fetch('/_forge_mobile/prompt-validity', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, text, steps }),
+        });
+        if (!response.ok) return;
+        const { invalid } = await response.json();
+        if (version === syntaxVersion && field.value === text && invalid !== null) {
+          promptSubtitle.classList.toggle('fm-prompt-error', invalid === true);
+        }
+      } catch { /* Forge may be reconnecting. */ }
+    }, 320);
+  }
+
+  function watchPromptValidity() {
+    tokenObserver.disconnect();
+    const counter = promptCounter();
+    promptSubtitle.classList.remove('fm-prompt-error');
+    if (counter) {
+      tokenObserver.observe(counter, { attributes: true, childList: true, characterData: true, subtree: true });
+      renderPromptValidity();
+    }
+    validateHiresPrompt();
+  }
+
   function renderPromptSide() {
     const hasHiresPrompts = Boolean(byId(promptId(mode.value, true, false)) && byId(promptId(mode.value, true, true)));
     hiresToggle.disabled = !hasHiresPrompts;
@@ -490,6 +475,7 @@
     hiresToggle.setAttribute('aria-pressed', String(Boolean(hires)));
     promptSubtitle.textContent = (hires ? 'Hires Fix ' : '') + (view.negative ? 'negative prompt' : 'positive prompt');
     if (!hires) promptSubtitle.textContent = view.negative ? 'Negative prompt' : 'Positive prompt';
+    watchPromptValidity();
     fitPromptFields();
     schedulePromptSubtitle();
   }
@@ -603,15 +589,6 @@
     const controlsResponse = await fetch(D.prefix + '/controls', { cache: 'no-store' });
     if (!controlsResponse.ok) throw new Error('Could not export Forge settings');
     settings.controls = await controlsResponse.json();
-    for (const tab of ['txt2img', 'img2img']) {
-      for (const hires of [false, true]) {
-        for (const negative of [false, true]) {
-          const id = promptId(tab, hires, negative);
-          const field = byId(id)?.querySelector('textarea');
-          if (field) settings.controls[id] = field.value;
-        }
-      }
-    }
     settings['mobile-layout'] = view;
     const activeDocks = window.ForgeMobileDockManager?.getLayoutSnapshot();
     if (activeDocks) settings['mobile-docks'] = activeDocks;
@@ -684,6 +661,7 @@
     if (promptPanel.contains(document.activeElement)) document.activeElement.blur();
     fitMobileViewport();
   });
+  promptPanel.addEventListener('input', validateHiresPrompt);
   promptPanel.addEventListener('focusin', fitMobileViewport);
   promptPanel.addEventListener('focusout', () => queueMicrotask(fitMobileViewport));
   window.visualViewport?.addEventListener('resize', fitMobileViewport);
@@ -868,28 +846,15 @@
     save();
   });
   new MutationObserver(renderDocks).observe(canvas, { childList: true });
-  promptPanel.addEventListener('input', () => {
-    if (nativePromptSizing || promptResizeFrame) return;
-    promptResizeFrame = requestAnimationFrame(() => {
-      promptResizeFrame = 0;
-      fitPromptFields();
-    });
-  });
+  promptPanel.addEventListener('input', fitPromptFields);
   new ResizeObserver(fitPromptFields).observe(topScroll);
   document.fonts?.ready.then(fitPromptFields);
   topScroll.addEventListener('scroll', schedulePromptSubtitle, { passive: true });
-  topScroll.addEventListener('scroll', scheduleHiresMenu, { passive: true });
-  window.visualViewport?.addEventListener('resize', scheduleHiresMenu);
-  window.visualViewport?.addEventListener('scroll', scheduleHiresMenu);
-  new MutationObserver(records => {
-    if (records.some(({ target }) => target.matches(hiresMenuInput))) scheduleHiresMenu();
-  }).observe(paramsPanel, { subtree: true, attributes: true, attributeFilter: ['aria-expanded'] });
   promptPanel.addEventListener('input', schedulePromptSubtitle);
   const promptSubtitleObserver = new ResizeObserver(schedulePromptSubtitle);
   promptSubtitleObserver.observe(topScroll);
   new ResizeObserver(() => {
     upper.style.setProperty('--mobile-scrollbar-width', (topScroll.offsetWidth - topScroll.clientWidth) + 'px');
-    scheduleHiresMenu();
   }).observe(topScroll);
   promptSubtitleObserver.observe(promptPanel);
   const dockResizeObserver = new ResizeObserver(() => window.ForgeMobileDockManager?.repositionWorkspace());
@@ -907,3 +872,4 @@
   console.error("Mobile workspace could not attach", error);
   window.MobileWorkspaceHost.notify("Mobile workspace could not attach to this Forge layout. See the browser console.");
 });
+

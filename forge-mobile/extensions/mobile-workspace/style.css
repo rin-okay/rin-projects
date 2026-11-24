@@ -6,7 +6,7 @@ body.mobile-active #lightboxModal { z-index: 11000 !important; }
 #mobile-overlay {
   position: fixed; inset: var(--mobile-viewport-top, 0px) 0 auto; z-index: 2000;
   display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box;
-
+  
   max-width: none; width: auto; min-height: 0;
   height: 100%; height: var(--mobile-viewport-height, 100dvh);
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
@@ -31,7 +31,7 @@ body.mobile-active #lightboxModal { z-index: 11000 !important; }
   flex: 1 1 0; min-height: 0; display: grid;
   --split-height: max(0px, calc(100% - var(--divider-height)));
   --gallery-track-min: min(var(--mobile-gallery-height, 0px), max(0px, calc(var(--split-height) - 64px)));
-
+  
   grid-template-rows: minmax(0, 1fr) var(--divider-height)
     max(var(--gallery-track-min), calc(var(--split-height) * var(--lower-share)));
 }
@@ -126,10 +126,8 @@ body.mobile-active #lightboxModal { z-index: 11000 !important; }
   padding-inline-end: calc(var(--mobile-content-inset) + var(--mobile-scrollbar-width, 0px));
 }
 #mobile-overlay[data-active-tab="prompt"] #mobile-generate-slot { padding-top: 2px; }
-#mobile-generation-actions { position: relative; display: flex; flex: 1 1 0; min-width: 0; }
-#mobile-generation-actions[data-running] > button { visibility: hidden; }
-#mobile-running-actions { position: absolute; inset: 0; display: flex; gap: 5px; }
-#mobile-generation-actions button { flex: 1 1 0; min-width: 0; min-height: 40px; }
+#mobile-generation-actions { display: flex; flex: 1 1 0; min-width: 0; gap: 5px; }
+#mobile-generation-actions > button { flex: 1 1 0; min-width: 0; min-height: 40px; }
 #mobile-generate-slot > :is(#mobile-negative-toggle, #mobile-hires-toggle) { flex: 0 0 82px; min-height: 40px; font-size: 12px; line-height: 1.1; }
 #mobile-overlay[data-active-tab]:not([data-active-tab="prompt"]) :is(#mobile-negative-toggle, #mobile-hires-toggle),
 #mobile-hires-toggle[hidden],
@@ -386,27 +384,6 @@ button.tutorial-clear { position:fixed; z-index:20000; right:calc(16px + env(saf
   box-shadow: none;
 }
 #mobile-overlay .gradio-dropdown .options .item { border-radius: 0px; }
-/* Anchor the native menu to its field inside the scaled, scrolling Params pane. */
-#mobile-overlay #mobile-params > #img2img_hires_fix_extension .gradio-dropdown .options[data-mobile-menu-side] {
-  position: absolute;
-  inset-inline: 0;
-  width: 100% !important;
-  min-width: 0;
-  max-height: var(--mobile-menu-height) !important;
-  margin: 0;
-  overscroll-behavior: contain;
-}
-#mobile-overlay #mobile-params > #img2img_hires_fix_extension .gradio-dropdown .options[data-mobile-menu-side="below"] {
-  top: 100% !important;
-  bottom: auto !important;
-}
-#mobile-overlay #mobile-params > #img2img_hires_fix_extension .gradio-dropdown .options[data-mobile-menu-side="above"] {
-  top: auto !important;
-  bottom: 100% !important;
-}
-#mobile-overlay #mobile-params > #img2img_hires_fix_extension .gradio-dropdown .options[data-mobile-menu-side] .item {
-  width: 100% !important;
-}
 #mobile-overlay :is(.gradio-dropdown .options .item.selected, [role="listbox"] [role="option"][aria-selected="true"]) {
   background: #2d1e2e !important;
   color: #f2e8f0 !important;
@@ -524,11 +501,6 @@ button.tutorial-clear { position:fixed; z-index:20000; right:calc(16px + env(saf
   margin-bottom: 10px;
 }
 #mobile-overlay #mobile-params > div { min-width: 0 !important; }
-#mobile-overlay #mobile-params > .mobile-hires-divider {
-  margin: 10px 0 8px;
-  border: 0;
-  border-top: 1px solid var(--mobile-line);
-}
 #mobile-overlay #mobile-prompt .generate-box { min-width: 0 !important; width: 100%; }
 #mobile-overlay .mobile-options { display: flex; flex-direction: column; gap: 10px; }
 #mobile-overlay .mobile-options :is(select, button, input) { max-width: 100%; }
@@ -560,6 +532,7 @@ button.tutorial-clear { position:fixed; z-index:20000; right:calc(16px + env(saf
 #mobile-overlay .fm-expanded-panel.gradio-accordion > div:last-child {
   display: block !important;
 }
+#mobile-overlay #mobile-prompt-subtitle.fm-prompt-error { color: #ff777e; }
 #mobile-overlay #mobile-prompt .token-counter { display: none !important; }
 #mobile-clone-prompt { align-self: end; min-height: 35px; font-size: 12px; }
 #mobile-overlay .prompt-fields > .prompt-box:not([hidden]) {

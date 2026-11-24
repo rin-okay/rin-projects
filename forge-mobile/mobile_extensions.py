@@ -7,48 +7,6 @@ from pathlib import Path
 from aiohttp import web
 
 
-TRACE_LABELS = {
-    "kind", "event", "target", "view", "route", "phase",
-}
-TRACE_TIMINGS = {
-    "at", "dispatchDelayMs", "releaseToClickMs", "nextFrameMs", "totalMs",
-    "firstByteMs", "status", "betweenMessagesMs", "handlerMs", "throughPaintMs", "durationMs",
-}
-TRACE_FLAGS = {"trusted", "success"}
-TRACE_KINDS = {"recording", "interaction", "frame-delay", "request", "queue", "event-timing", "long-task"}
-TRACE_LIMIT = 64 * 1024
-
-
-def valid_trace_record(row):
-    if not isinstance(row, dict) or not isinstance(row.get("kind"), str) or row["kind"] not in TRACE_KINDS:
-        return False
-    trace_id = row.get("trace")
-    if not isinstance(trace_id, str) or not re.fullmatch(r"[0-9a-f]{8}", trace_id):
-        return False
-    for key, value in row.items():
-        if key == "trace":
-            continue
-        if key in TRACE_LABELS and isinstance(value, str) and re.fullmatch(r"[a-zA-Z0-9_/-]{1,64}", value):
-            continue
-        if key in TRACE_TIMINGS and (value is None or (type(value) in (int, float) and 0 <= value <= 1e12)):
-            continue
-        if key in TRACE_FLAGS and (value is None or isinstance(value, bool)):
-            continue
-        return False
-    return True
-
-
-async def print_trace(request):
-    if request.content_type != "application/json":
-        raise web.HTTPUnsupportedMediaType()
-    rows = await request.clone(client_max_size=TRACE_LIMIT).json()
-    if not isinstance(rows, list) or not 1 <= len(rows) <= 160 or not all(map(valid_trace_record, rows)):
-        raise web.HTTPBadRequest(text="Invalid performance trace")
-    lines = ("[Forge Mobile trace] " + json.dumps(row, separators=(",", ":")) for row in rows)
-    print("\n".join(lines), flush=True)
-    return web.Response(status=204)
-
-
 class MobileExtensions:
     def __init__(self, root, defaults):
         self.root = root.resolve()
@@ -121,8 +79,6 @@ class MobileExtensions:
         return ordered
 
     async def handle(self, request, tail):
-        if tail == "trace" and request.method == "POST":
-            return await print_trace(request)
         if tail == "taps" and request.method == "GET":
             return web.FileResponse(self.root / "mobile-workspace" / "tap-report.html",
                                     headers={"Cache-Control": "no-store"})

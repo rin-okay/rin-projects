@@ -47,30 +47,11 @@
     // pagehide still flushes settings/fields; generation remains owned by PC.
     window.addEventListener("beforeunload", event => event.stopImmediatePropagation(), { capture: true });
 
-    const mobileOpen = () => document.getElementById("mobile-overlay")?.hidden === false;
-    const promptValue = id => document.getElementById(id)?.querySelector("textarea")?.value;
-
-    // The editor is the source of truth even if Forge is still debouncing input.
-    window.forgeMobileReadPrompts = (args, slots) => {
-        if (!mobileOpen()) return;
-        for (const [position, id] of slots) {
-            const value = promptValue(id);
-            if (value !== undefined) args[position] = value;
-        }
-    };
-
-    // Forge invokes its hidden token buttons after a typing pause. Leave
-    // native token counting available whenever the mobile workspace is closed.
-    document.addEventListener("click", event => {
-        if (mobileOpen() && event.target.closest?.(
-            "#txt2img_token_button, #txt2img_negative_token_button, #img2img_token_button, #img2img_negative_token_button"
-        )) event.stopImmediatePropagation();
-    }, true);
-
     window.forgeMobilePrepareImg2imgHires = data => {
-        if (!mobileOpen()) return;
+        const overlay = document.getElementById("mobile-overlay");
+        if (!overlay || overlay.hidden) return;
         const prompts = ["img2img_prompt", "img2img_neg_prompt"].map(id =>
-            promptValue(id) ?? "");
+            document.getElementById(id)?.querySelector("textarea")?.value ?? "");
         data.push({ forge_mobile_img2img_prompts: prompts });
         const button = document.getElementById("img2img_hires_fix_manual_button");
         if (button?.getAttribute("aria-busy") === "true") {
@@ -178,12 +159,7 @@
                                 if (!data) continue;
                                 if (id) cursor = id;
                                 controller.enqueue(encoder.encode(data + "\n\n"));
-                                const message = JSON.parse(data.slice(6));
-                                // The opt-in logger observes timings without changing the queue.
-                                try {
-                                    window.ForgeMobileTrace?.queueMessage?.(message.msg, message.event_id, message.success);
-                                } catch { /* diagnostics only */ }
-                                if (message.msg === "close_stream") {
+                                if (JSON.parse(data.slice(6)).msg === "close_stream") {
                                     controller.close();
                                     return;
                                 }

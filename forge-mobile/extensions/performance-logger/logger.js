@@ -22,6 +22,8 @@
     let recent = [];
     let pending = [];
     let flushTimer;
+    let sending = false;
+    let warnedAboutDelivery = false;
     let frame;
     let awaitingFrame = [];
     let lastRelease;
@@ -48,13 +50,28 @@
     function flush() {
         clearTimeout(flushTimer);
         flushTimer = undefined;
-        if (!pending.length) return;
-        console.info(prefix, pending);
+        if (!pending.length || sending) return;
+        const batch = pending;
         pending = [];
+        console.info(prefix, batch);
+        sending = true;
+        fetch("/_forge_mobile/trace", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(batch), keepalive: true
+        }).then(response => {
+            if (!response.ok) throw new Error("HTTP " + response.status);
+        }).catch(error => {
+            if (!warnedAboutDelivery) console.warn(prefix, "Could not send trace to the PC", error);
+            warnedAboutDelivery = true;
+        }).finally(() => {
+            sending = false;
+            if (flushTimer === undefined && pending.length) flush();
+        });
     }
 
     function add(kind, details) {
-        const row = { kind, ...details };
+        if (!capture) return;
+        const row = { trace: capture.id, kind, ...details };
         if (recent.length === reportLimit) recent.shift();
         if (pending.length === reportLimit) pending.shift();
         recent.push(row);
@@ -153,7 +170,9 @@
     function start() {
         if (capture) return;
         recent = [];
-        capture = { listeners: new AbortController(), observers: [], jobs: new Map() };
+        warnedAboutDelivery = false;
+        const id = crypto.getRandomValues(new Uint32Array(1))[0].toString(16).padStart(8, "0");
+        capture = { id, listeners: new AbortController(), observers: [], jobs: new Map() };
         const { signal } = capture.listeners;
         for (const type of eventTypes) {
             document.addEventListener(type, inputEvent, { capture: true, passive: true, signal });
@@ -180,11 +199,13 @@
         };
         api.queueMessage = queueMessage;
         if (toggle) toggle.checked = true;
+        add("recording", { at: round(now()), phase: "started" });
         console.info(prefix, "Recording 7862 interactions", observers);
     }
 
     function stop() {
         if (!capture) return;
+        add("recording", { at: round(now()), phase: "stopped" });
         delete api.queueMessage;
         capture.listeners.abort();
         for (const observer of capture.observers) observer.disconnect();

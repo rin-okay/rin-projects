@@ -343,6 +343,9 @@
     fitGalleryTrack();
   }
 
+  const nativePromptSizing = CSS.supports('field-sizing', 'content');
+  let promptResizeFrame = 0;
+
   function fitPromptFields() {
     if (overlay.hidden || promptPanel.hidden) return;
     const scrollStyle = getComputedStyle(topScroll);
@@ -350,6 +353,12 @@
       - (parseFloat(scrollStyle.paddingTop) || 0) - (parseFloat(scrollStyle.paddingBottom) || 0);
     const zoom = view.uiScale / 100;
     for (const field of promptPanel.querySelectorAll('.prompt-box:not([hidden]) textarea')) {
+      if (nativePromptSizing) {
+        const surrounding = (promptPanel.getBoundingClientRect().height - field.getBoundingClientRect().height) / zoom;
+        const height = Math.ceil(Math.max(52, available - Math.max(0, surrounding)));
+        field.style.setProperty('--mobile-prompt-height', height + 'px');
+        continue;
+      }
       const original = { height: field.style.height, minHeight: field.style.minHeight, flex: field.style.flex };
       // Measure natural content and surrounding controls without a previous
       // minimum feeding back into the next resize. All dimensions below are
@@ -466,64 +475,6 @@
     });
   }
 
-  const tokenObserver = new MutationObserver(renderPromptValidity);
-  let syntaxTimer;
-  let syntaxVersion = 0;
-
-  function promptCounter() {
-    const tab = mode.value;
-    const hires = !clonePrompt.hidden;
-    const side = view.negative ? 'negative_token_counter' : 'token_counter';
-    const box = byId(promptId(tab, hires, view.negative));
-    return box?.querySelector('.token-counter') || (hires
-      ? byId(tab + '_hr_' + side) || (tab === 'txt2img' && byId('hr_' + side))
-      : byId(tab + '_' + side));
-  }
-
-  function renderPromptValidity() {
-    const counter = promptCounter();
-    if (!counter) return;
-    promptSubtitle.classList.toggle('fm-prompt-error', counter.matches('.error')
-      || Boolean(counter.querySelector('.error')) || /\berror\b/i.test(counter.textContent));
-  }
-
-  function validateHiresPrompt() {
-    clearTimeout(syntaxTimer);
-    const version = ++syntaxVersion;
-    if (clonePrompt.hidden || promptCounter()) return;
-    const tab = mode.value;
-    const field = byId(promptId(tab, true, view.negative))?.querySelector('textarea');
-    if (!field) return;
-    const prompt = promptId(tab, false, view.negative);
-    const text = field.value;
-    const stepField = byId(tab === 'img2img' ? 'img2img_hires_fix_steps' : 'txt2img_hires_steps');
-    const steps = Number(stepField?.querySelector('input[type="number"]')?.value);
-    syntaxTimer = setTimeout(async () => {
-      try {
-        const response = await fetch('/_forge_mobile/prompt-validity', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt, text, steps }),
-        });
-        if (!response.ok) return;
-        const { invalid } = await response.json();
-        if (version === syntaxVersion && field.value === text && invalid !== null) {
-          promptSubtitle.classList.toggle('fm-prompt-error', invalid === true);
-        }
-      } catch { /* Forge may be reconnecting. */ }
-    }, 320);
-  }
-
-  function watchPromptValidity() {
-    tokenObserver.disconnect();
-    const counter = promptCounter();
-    promptSubtitle.classList.remove('fm-prompt-error');
-    if (counter) {
-      tokenObserver.observe(counter, { attributes: true, childList: true, characterData: true, subtree: true });
-      renderPromptValidity();
-    }
-    validateHiresPrompt();
-  }
-
   function renderPromptSide() {
     const hasHiresPrompts = Boolean(byId(promptId(mode.value, true, false)) && byId(promptId(mode.value, true, true)));
     hiresToggle.disabled = !hasHiresPrompts;
@@ -539,7 +490,6 @@
     hiresToggle.setAttribute('aria-pressed', String(Boolean(hires)));
     promptSubtitle.textContent = (hires ? 'Hires Fix ' : '') + (view.negative ? 'negative prompt' : 'positive prompt');
     if (!hires) promptSubtitle.textContent = view.negative ? 'Negative prompt' : 'Positive prompt';
-    watchPromptValidity();
     fitPromptFields();
     schedulePromptSubtitle();
   }
@@ -653,6 +603,15 @@
     const controlsResponse = await fetch(D.prefix + '/controls', { cache: 'no-store' });
     if (!controlsResponse.ok) throw new Error('Could not export Forge settings');
     settings.controls = await controlsResponse.json();
+    for (const tab of ['txt2img', 'img2img']) {
+      for (const hires of [false, true]) {
+        for (const negative of [false, true]) {
+          const id = promptId(tab, hires, negative);
+          const field = byId(id)?.querySelector('textarea');
+          if (field) settings.controls[id] = field.value;
+        }
+      }
+    }
     settings['mobile-layout'] = view;
     const activeDocks = window.ForgeMobileDockManager?.getLayoutSnapshot();
     if (activeDocks) settings['mobile-docks'] = activeDocks;
@@ -725,7 +684,6 @@
     if (promptPanel.contains(document.activeElement)) document.activeElement.blur();
     fitMobileViewport();
   });
-  promptPanel.addEventListener('input', validateHiresPrompt);
   promptPanel.addEventListener('focusin', fitMobileViewport);
   promptPanel.addEventListener('focusout', () => queueMicrotask(fitMobileViewport));
   window.visualViewport?.addEventListener('resize', fitMobileViewport);
@@ -910,7 +868,13 @@
     save();
   });
   new MutationObserver(renderDocks).observe(canvas, { childList: true });
-  promptPanel.addEventListener('input', fitPromptFields);
+  promptPanel.addEventListener('input', () => {
+    if (nativePromptSizing || promptResizeFrame) return;
+    promptResizeFrame = requestAnimationFrame(() => {
+      promptResizeFrame = 0;
+      fitPromptFields();
+    });
+  });
   new ResizeObserver(fitPromptFields).observe(topScroll);
   document.fonts?.ready.then(fitPromptFields);
   topScroll.addEventListener('scroll', schedulePromptSubtitle, { passive: true });

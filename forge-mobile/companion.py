@@ -24,6 +24,10 @@ from mobile_extensions import MobileExtensions
 HERE = Path(__file__).resolve().parent
 VERSION = (HERE / "VERSION").read_text(encoding="utf-8").strip()
 PREFIX = "/_forge_mobile"
+PROMPT_NAMES = (
+    "txt2img_prompt", "txt2img_neg_prompt", "hires_prompt", "hires_neg_prompt",
+    "img2img_prompt", "img2img_neg_prompt", "img2img_hr_prompt", "img2img_hr_neg_prompt",
+)
 SUBMIT = re.compile(r"\b(submit_txt2img_upscale|submit_img2img|i2iHiresPrepare|submit)\s*(?:\(|$)")
 INLINE_CONFIG = re.compile(r"window\.gradio_config\s*=\s*")
 TASK_ID = re.compile(r"task\([a-zA-Z0-9_-]+\)")
@@ -311,7 +315,12 @@ class Workspace:
             props = updates.get(str(component["id"]))
             if props:
                 component["props"].update(file_urls(props, origin))
+        mobile_prompts = {self.component_names[name]: name for name in PROMPT_NAMES if name in self.component_names}
+        token_events = {dep["id"] for dep in self.token_validators.values()}
         for dep in config["dependencies"]:
+            if dep["id"] in token_events:
+                dep["targets"] = [target for target in dep.get("targets", [])
+                                  if target[0] not in mobile_prompts or target[1] != "input"]
             kind = self.generation.get(dep["id"], (None, None))[0]
             if kind in {"submit_txt2img_upscale", "i2iHiresPrepare"}:
                 dep["trigger_mode"] = "multiple"
@@ -324,20 +333,27 @@ class Workspace:
                     "const index = selected_gallery_index_id('img2img_gallery_container'); "
                     "if (index >= 0) data[2] = index; } return data; }"
                 )
-            _, controls = self.controlnet.get(dep["id"], ([], []))
-            if not controls:
+            if not kind:
                 continue
-            # Leave the original Forge JS input/output positions intact. The
-            # extra controls travel after its native submission data.
+            _, controls = self.controlnet.get(dep["id"], ([], []))
+            slots = [(position, mobile_prompts[component]) for position, component in enumerate(dep["inputs"])
+                     if component in mobile_prompts]
+            if not controls and not slots:
+                continue
             count = len(dep["inputs"])
             native_js = dep["js"]
-            dep["js"] = (
-                f"async (...args) => {{ const native = ({native_js}); "
-                f"const extra = args.splice({count}, {len(controls)}); "
-                f"const data = await native(...args); "
-                f"return [...data.slice(0, {count}), ...extra]; }}"
-            )
-            dep["inputs"] = dep["inputs"] + controls
+            read_prompts = f"window.forgeMobileReadPrompts?.(args, {json.dumps(slots)}); " if slots else ""
+            if controls:
+                # Keep Forge's native callback arguments in their original positions.
+                dep["js"] = (
+                    f"async (...args) => {{ const native = ({native_js}); {read_prompts}"
+                    f"const extra = args.splice({count}, {len(controls)}); "
+                    f"const data = await native(...args); "
+                    f"return [...data.slice(0, {count}), ...extra]; }}"
+                )
+                dep["inputs"] = dep["inputs"] + controls
+            else:
+                dep["js"] = f"(...args) => {{ {read_prompts}return ({native_js})(...args); }}"
         outputs = sorted({
             component for index in self.generation
             for component in self.deps[index]["outputs"]
@@ -356,7 +372,7 @@ class Workspace:
             "show_api": False, "zerogpu": False, "rendered_in": None,
         }
         config["dependencies"].append(pull_dependency)
-        for offset, component in enumerate(sorted(self.editable_fields), start=1):
+        for offset, component in enumerate(sorted(self.editable_fields - mobile_prompts.keys()), start=1):
             config["dependencies"].append({
                 **pull_dependency,
                 "id": pull_dependency["id"] + offset,

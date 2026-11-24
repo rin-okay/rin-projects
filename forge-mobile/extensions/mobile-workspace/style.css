@@ -560,7 +560,6 @@ button.tutorial-clear { position:fixed; z-index:20000; right:calc(16px + env(saf
 #mobile-overlay .fm-expanded-panel.gradio-accordion > div:last-child {
   display: block !important;
 }
-#mobile-overlay #mobile-prompt-subtitle.fm-prompt-error { color: #ff777e; }
 #mobile-overlay #mobile-prompt .token-counter { display: none !important; }
 #mobile-clone-prompt { align-self: end; min-height: 35px; font-size: 12px; }
 #mobile-overlay .prompt-fields > .prompt-box:not([hidden]) {

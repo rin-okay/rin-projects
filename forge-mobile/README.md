@@ -1,4 +1,4 @@
-# Forge Mobile Client v0.3.25
+# Forge Mobile Client v0.3.26
 
 A standalone companion on port 7862 with the mobile workspace from the HTML preview. Start Forge normally on 7860, then run this companion from its own directory.
 
@@ -128,7 +128,7 @@ Defaults are 85% upper-workspace scale, an unlocked Gallery dock at bottom left,
 - mobile-settings.json holds mobile layout, scaling, and dock settings.
 - defaults.json supplies initial mobile settings.
 
-Ordinary native input edits are saved through frontend Gradio events. The companion keeps consuming the generation queue while the phone disconnects. Reloading restores the captured controls and output gallery together with generation metadata.
+Forge Mobile keeps unsubmitted prompt edits in the page and saves prompt values when you submit a generation. Export Settings includes the current prompt text. Live token checks are paused in the mobile workspace. Other native input edits are saved through frontend Gradio events. The companion keeps consuming the generation queue while the phone disconnects. Reloading restores the captured controls and output gallery together with generation metadata.
 
 Cached images and extension-owned Python state still belong to the running Forge process. Restarting Forge can invalidate cached uploads and results. A UI/config fingerprint resets captured component state if Forge's component layout changes.
 

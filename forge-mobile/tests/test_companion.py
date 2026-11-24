@@ -94,6 +94,37 @@ class CompanionIntegration(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(restored["components"][3]["props"]["value"])
         self.assertEqual(Workspace(self.workspace.path).draft["2"]["value"], "unsent edit")
 
+    async def test_prompts_are_saved_on_generate_instead_of_input(self):
+        self.config["components"].extend([
+            {"id": 6, "type": "textbox", "props": {"elem_id": "txt2img_neg_prompt"}},
+            {"id": 7, "type": "textbox", "props": {"elem_id": "hires_prompt"}},
+            {"id": 8, "type": "html", "props": {"elem_id": "txt2img_token_counter"}},
+        ])
+        self.config["dependencies"][0]["inputs"].extend([6, 7])
+        self.config["dependencies"].append({
+            "id": 1, "backend_fn": True, "inputs": [2], "outputs": [8], "targets": [[2, "input"]],
+        })
+        config = await (await self.client.get("/config")).json()
+        input_savers = {
+            dep["inputs"][0] for dep in config["dependencies"]
+            if "forgeMobileSaveField" in (dep.get("js") or "")
+        }
+        self.assertTrue({2, 6, 7}.isdisjoint(input_savers))
+        self.assertIn(3, input_savers)
+        self.assertEqual(config["dependencies"][1]["targets"], [])
+        self.assertIn('[[1, "txt2img_prompt"], [3, "txt2img_neg_prompt"], [4, "hires_prompt"]]',
+                      config["dependencies"][0]["js"])
+
+        submitted = ["task(fresh-prompts)", "new positive", True, "new negative", "new hires"]
+        response = await self.client.post("/queue/join", json={
+            "fn_index": 0, "session_hash": "phone", "data": submitted,
+        })
+        self.assertEqual(response.status, 200)
+        self.assertEqual(self.submissions[-1]["data"], submitted)
+        saved = Workspace(self.workspace.path).draft
+        self.assertEqual([saved[str(i)]["value"] for i in (2, 6, 7)],
+                         ["new positive", "new negative", "new hires"])
+
     async def test_img2img_hires_uses_current_prompts_without_overwriting_drafts(self):
         self.config["components"].extend([
             {"id": 6, "type": "textbox", "props": {"elem_id": "img2img_prompt"}},

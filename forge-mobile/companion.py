@@ -77,7 +77,7 @@ class Workspace:
         self.editable_fields = set()
         self.component_names = {}
         self.img2img_hires = {}
-        self.token_validators = {}
+        self.prompt_counter_events = set()
         self.fingerprint = None
         self.draft = {}
         self.results = {}
@@ -144,17 +144,16 @@ class Workspace:
                 self.img2img_hires[index] = pair
                 for name, (_, component_id) in zip(("img2img_hr_prompt", "img2img_hr_neg_prompt"), pair):
                     self.component_names[name] = component_id
-        self.token_validators = {}
+        self.prompt_counter_events = set()
+        prompt_fields = {self.component_names[name] for name in PROMPT_NAMES if name in self.component_names}
         for dep in deps.values():
             inputs, outputs = dep["inputs"], dep["outputs"]
-            if not dep.get("backend_fn") or len(inputs) not in (1, 2) or len(outputs) != 1:
+            if not dep.get("backend_fn") or not inputs or inputs[0] not in prompt_fields or len(outputs) != 1:
                 continue
-            prompt = components.get(inputs[0], {}).get("props", {}).get("elem_id")
             counter = components.get(outputs[0], {}).get("props", {})
-            if (prompt in {"txt2img_prompt", "txt2img_neg_prompt", "img2img_prompt", "img2img_neg_prompt"}
-                    and ((counter.get("elem_id") or "").endswith("token_counter")
-                         or "token-counter" in (counter.get("elem_classes") or []))):
-                self.token_validators[prompt] = dep
+            if ((counter.get("elem_id") or "").endswith("token_counter")
+                    or "token-counter" in (counter.get("elem_classes") or [])):
+                self.prompt_counter_events.add(dep["id"])
         signature = [
             config.get("version"),
             [(i, c["type"], c["props"].get("elem_id"), c["props"].get("label")) for i, c in components.items()],
@@ -316,11 +315,10 @@ class Workspace:
             if props:
                 component["props"].update(file_urls(props, origin))
         mobile_prompts = {self.component_names[name]: name for name in PROMPT_NAMES if name in self.component_names}
-        token_events = {dep["id"] for dep in self.token_validators.values()}
         for dep in config["dependencies"]:
-            if dep["id"] in token_events:
+            if dep["id"] in self.prompt_counter_events:
                 dep["targets"] = [target for target in dep.get("targets", [])
-                                  if target[0] not in mobile_prompts or target[1] != "input"]
+                                  if target[0] not in mobile_prompts or target[1] not in {"input", "change", "key_up"}]
             kind = self.generation.get(dep["id"], (None, None))[0]
             if kind in {"submit_txt2img_upscale", "i2iHiresPrepare"}:
                 dep["trigger_mode"] = "multiple"
@@ -733,33 +731,6 @@ class Companion:
             return web.FileResponse(HERE / "client-loader.js", headers={"Cache-Control": "no-store"})
         if path == PREFIX + "/state" and request.method == "GET":
             return self.state(request)
-        if path == PREFIX + "/prompt-validity" and request.method == "POST":
-            payload = await request.json()
-            prompt, text = payload.get("prompt"), payload.get("text")
-            if not isinstance(prompt, str) or not isinstance(text, str):
-                raise web.HTTPBadRequest(text="Invalid prompt")
-            await self.ensure_config(request)
-            dep = self.workspace.token_validators.get(prompt)
-            if dep is None:
-                return web.json_response({"invalid": None})
-            data = [text]
-            if len(dep["inputs"]) == 2:
-                steps = payload.get("steps")
-                data.append(steps if type(steps) is int and steps > 0 else 20)
-            api_name = quote(str(dep.get("api_name") or "predict"), safe="")
-            async with self.http.post(
-                self.url(request, "/run/" + api_name), headers=self.headers(request),
-                json={"fn_index": dep["id"], "session_hash": self.session, "data": data},
-            ) as response:
-                if response.status != 200:
-                    return web.json_response({"invalid": None})
-                value = (await response.json()).get("data") or [None]
-                value = value[0]
-                if isinstance(value, dict):
-                    value = value.get("value")
-                return web.json_response({
-                    "invalid": bool(re.search(r"\berror\b", value, re.I)) if isinstance(value, str) else None
-                })
         if path == PREFIX + "/controls":
             await self.ensure_config(request)
             if request.method == "GET":

@@ -50,9 +50,6 @@ class CompanionIntegration(unittest.IsolatedAsyncioTestCase):
             if request.path == "/":
                 return web.Response(text="<html><head><script>window.gradio_config=" +
                                     json.dumps(self.config) + ";</script></head><body></body></html>")
-            if request.path == "/run/test_tokens":
-                data = (await request.json())["data"]
-                return web.json_response({"data": ["<span>Error</span>" if data[0] == "bad" else "<span>2/75</span>"]})
             if request.path == "/queue/join":
                 self.submissions.append(await request.json())
                 return web.json_response({"event_id": "event-1"})
@@ -102,7 +99,8 @@ class CompanionIntegration(unittest.IsolatedAsyncioTestCase):
         ])
         self.config["dependencies"][0]["inputs"].extend([6, 7])
         self.config["dependencies"].append({
-            "id": 1, "backend_fn": True, "inputs": [2], "outputs": [8], "targets": [[2, "input"]],
+            "id": 1, "backend_fn": True, "inputs": [2, 3, 7], "outputs": [8],
+            "targets": [[2, "input"], [2, "change"], [2, "key_up"], [3, "change"]],
         })
         config = await (await self.client.get("/config")).json()
         input_savers = {
@@ -111,7 +109,7 @@ class CompanionIntegration(unittest.IsolatedAsyncioTestCase):
         }
         self.assertTrue({2, 6, 7}.isdisjoint(input_savers))
         self.assertIn(3, input_savers)
-        self.assertEqual(config["dependencies"][1]["targets"], [])
+        self.assertEqual(config["dependencies"][1]["targets"], [[3, "change"]])
         self.assertIn('[[1, "txt2img_prompt"], [3, "txt2img_neg_prompt"], [4, "hires_prompt"]]',
                       config["dependencies"][0]["js"])
 
@@ -130,23 +128,16 @@ class CompanionIntegration(unittest.IsolatedAsyncioTestCase):
             {"id": 6, "type": "textbox", "props": {"elem_id": "img2img_prompt"}},
             {"id": 7, "type": "textbox", "props": {"label": "Hires prompt"}},
             {"id": 8, "type": "textbox", "props": {"label": "Hires negative prompt"}},
-            {"id": 9, "type": "html", "props": {"elem_id": "img2img_token_counter"}},
         ])
         self.config["dependencies"].extend([
             {"id": 1, "backend_fn": True, "js": "i2iHiresPrepare", "inputs": [1, 4, 10, 5, 7, 8],
              "outputs": [4, 5], "targets": [[10, "click"]]},
-            {"id": 2, "backend_fn": True, "api_name": "test_tokens", "inputs": [6], "outputs": [9],
-             "targets": [[6, "input"]]},
         ])
         config = await (await self.client.get("/config")).json()
         self.assertEqual(config["components"][7]["props"]["elem_id"], "img2img_hr_prompt")
         self.assertEqual(config["components"][8]["props"]["elem_id"], "img2img_hr_neg_prompt")
         self.assertEqual(config["dependencies"][1]["trigger_mode"], "multiple")
 
-        for prompt, expected in (("bad", True), ("good", False)):
-            response = await self.client.post("/_forge_mobile/prompt-validity", json={
-                "prompt": "img2img_prompt", "text": prompt})
-            self.assertEqual((await response.json())["invalid"], expected)
 
         for item, (hires_pair, current_pair, expected) in enumerate([
             (["", "explicit negative"], ["current positive", "current negative"], ["current positive", "explicit negative"]),

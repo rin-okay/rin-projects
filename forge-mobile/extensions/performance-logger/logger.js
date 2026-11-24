@@ -18,6 +18,7 @@
     const safeDuration = (end, start) => end >= start && start >= 0 ? round(end - start) : null;
 
     let capture;
+    let toggle;
     let recent = [];
     let pending = [];
     let flushTimer;
@@ -178,6 +179,7 @@
             })
         };
         api.queueMessage = queueMessage;
+        if (toggle) toggle.checked = true;
         console.info(prefix, "Recording 7862 interactions", observers);
     }
 
@@ -189,9 +191,20 @@
         capture = undefined;
         stopFrames();
         flush();
+        if (toggle) toggle.checked = false;
         console.info(prefix, "Stopped");
+    }
+
+    function bindToggle() {
+        toggle = document.getElementById("mobile-performance-logger");
+        if (!toggle) return false;
+        toggle.checked = Boolean(capture);
+        toggle.disabled = false;
+        toggle.addEventListener("change", () => toggle.checked ? start() : stop());
+        return true;
     }
 
     const api = window.ForgeMobileTrace = { start, stop, report: () => recent.map(row => ({ ...row })) };
     if (new URLSearchParams(location.search).get("forgeTrace") === "1") start();
+    if (!bindToggle()) document.addEventListener("forge-mobile-ready", bindToggle, { once: true });
 })();

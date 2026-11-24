@@ -1,10 +1,18 @@
-# Forge Mobile Client v0.3.27
+# Forge Mobile Client v0.3.28
 
 A standalone companion on port 7862 with the mobile workspace from the HTML preview. Start Forge normally on 7860, then run this companion from its own directory.
 
 The IIB tab opens a separate instance of the installed Infinite Image Browsing frontend and fills the workspace below the mobile tabs.
 
 IIB must be enabled as an extension in the running Forge instance, so its frontend and native Send to controls are available through 7862. The companion uses Forge's IIB asset/API routes through its existing proxy. A separate standalone IIB service on 7861 alone does not provide Forge's native paste controls.
+
+## Trace delays on 7862
+
+Open the mobile URL with `?forgeTrace=1`, then open the browser console and filter for `[Forge Mobile trace]`. In an already open page, run `ForgeMobileTrace.start()` in the console. This works in the mobile workspace and the native view served on 7862.
+
+Reproduce a slow prompt edit, tab switch, or seed reuse. Compare `interaction` and `frame-delay` with `request` and `queue` records on the same timeline. Event Timing and Long Task entries appear when supported by the browser. The two-frame estimate measures a rendering opportunity, and time between received queue messages includes delivery time.
+
+Run `ForgeMobileTrace.stop()` when done. `JSON.stringify(ForgeMobileTrace.report())` returns the last 160 records for sharing. The logger is off by default and records timing, control names, and known request routes without recording field contents or request data.
 
 ## Set up Img2img Hires Fix and input archiving
 

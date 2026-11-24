@@ -178,7 +178,12 @@
                                 if (!data) continue;
                                 if (id) cursor = id;
                                 controller.enqueue(encoder.encode(data + "\n\n"));
-                                if (JSON.parse(data.slice(6)).msg === "close_stream") {
+                                const message = JSON.parse(data.slice(6));
+                                // The opt-in logger observes timings without changing the queue.
+                                try {
+                                    window.ForgeMobileTrace?.queueMessage?.(message.msg, message.event_id, message.success);
+                                } catch { /* diagnostics only */ }
+                                if (message.msg === "close_stream") {
                                     controller.close();
                                     return;
                                 }

@@ -1,0 +1,5 @@
+{
+    "id": "performance-logger",
+    "name": "Performance Logger",
+    "scripts": ["logger.js"]
+}

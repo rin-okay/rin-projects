@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import hashlib
+from importlib.util import module_from_spec, spec_from_file_location
 import json
 import logging
 import os
@@ -23,6 +24,10 @@ from mobile_extensions import MobileExtensions
 HERE = Path(__file__).resolve().parent
 VERSION = (HERE / "VERSION").read_text(encoding="utf-8").strip()
 PREFIX = "/_forge_mobile"
+PROMPT_NAMES = (
+    "txt2img_prompt", "txt2img_neg_prompt", "hires_prompt", "hires_neg_prompt",
+    "img2img_prompt", "img2img_neg_prompt", "img2img_hr_prompt", "img2img_hr_neg_prompt",
+)
 SUBMIT = re.compile(r"\b(submit_txt2img_upscale|submit_img2img|i2iHiresPrepare|submit)\s*(?:\(|$)")
 INLINE_CONFIG = re.compile(r"window\.gradio_config\s*=\s*")
 TASK_ID = re.compile(r"task\([a-zA-Z0-9_-]+\)")
@@ -72,7 +77,7 @@ class Workspace:
         self.editable_fields = set()
         self.component_names = {}
         self.img2img_hires = {}
-        self.token_validators = {}
+        self.prompt_counter_events = set()
         self.fingerprint = None
         self.draft = {}
         self.results = {}
@@ -139,17 +144,16 @@ class Workspace:
                 self.img2img_hires[index] = pair
                 for name, (_, component_id) in zip(("img2img_hr_prompt", "img2img_hr_neg_prompt"), pair):
                     self.component_names[name] = component_id
-        self.token_validators = {}
+        self.prompt_counter_events = set()
+        prompt_fields = {self.component_names[name] for name in PROMPT_NAMES if name in self.component_names}
         for dep in deps.values():
             inputs, outputs = dep["inputs"], dep["outputs"]
-            if not dep.get("backend_fn") or len(inputs) not in (1, 2) or len(outputs) != 1:
+            if not dep.get("backend_fn") or not inputs or inputs[0] not in prompt_fields or len(outputs) != 1:
                 continue
-            prompt = components.get(inputs[0], {}).get("props", {}).get("elem_id")
             counter = components.get(outputs[0], {}).get("props", {})
-            if (prompt in {"txt2img_prompt", "txt2img_neg_prompt", "img2img_prompt", "img2img_neg_prompt"}
-                    and ((counter.get("elem_id") or "").endswith("token_counter")
-                         or "token-counter" in (counter.get("elem_classes") or []))):
-                self.token_validators[prompt] = dep
+            if ((counter.get("elem_id") or "").endswith("token_counter")
+                    or "token-counter" in (counter.get("elem_classes") or [])):
+                self.prompt_counter_events.add(dep["id"])
         signature = [
             config.get("version"),
             [(i, c["type"], c["props"].get("elem_id"), c["props"].get("label")) for i, c in components.items()],
@@ -310,7 +314,11 @@ class Workspace:
             props = updates.get(str(component["id"]))
             if props:
                 component["props"].update(file_urls(props, origin))
+        mobile_prompts = {self.component_names[name]: name for name in PROMPT_NAMES if name in self.component_names}
         for dep in config["dependencies"]:
+            if dep["id"] in self.prompt_counter_events:
+                dep["targets"] = [target for target in dep.get("targets", [])
+                                  if target[0] not in mobile_prompts or target[1] not in {"input", "change", "key_up"}]
             kind = self.generation.get(dep["id"], (None, None))[0]
             if kind in {"submit_txt2img_upscale", "i2iHiresPrepare"}:
                 dep["trigger_mode"] = "multiple"
@@ -323,20 +331,27 @@ class Workspace:
                     "const index = selected_gallery_index_id('img2img_gallery_container'); "
                     "if (index >= 0) data[2] = index; } return data; }"
                 )
-            _, controls = self.controlnet.get(dep["id"], ([], []))
-            if not controls:
+            if not kind:
                 continue
-            # Leave the original Forge JS input/output positions intact. The
-            # extra controls travel after its native submission data.
+            _, controls = self.controlnet.get(dep["id"], ([], []))
+            slots = [(position, mobile_prompts[component]) for position, component in enumerate(dep["inputs"])
+                     if component in mobile_prompts]
+            if not controls and not slots:
+                continue
             count = len(dep["inputs"])
             native_js = dep["js"]
-            dep["js"] = (
-                f"async (...args) => {{ const native = ({native_js}); "
-                f"const extra = args.splice({count}, {len(controls)}); "
-                f"const data = await native(...args); "
-                f"return [...data.slice(0, {count}), ...extra]; }}"
-            )
-            dep["inputs"] = dep["inputs"] + controls
+            read_prompts = f"window.forgeMobileReadPrompts?.(args, {json.dumps(slots)}); " if slots else ""
+            if controls:
+                # Keep Forge's native callback arguments in their original positions.
+                dep["js"] = (
+                    f"async (...args) => {{ const native = ({native_js}); {read_prompts}"
+                    f"const extra = args.splice({count}, {len(controls)}); "
+                    f"const data = await native(...args); "
+                    f"return [...data.slice(0, {count}), ...extra]; }}"
+                )
+                dep["inputs"] = dep["inputs"] + controls
+            else:
+                dep["js"] = f"(...args) => {{ {read_prompts}return ({native_js})(...args); }}"
         outputs = sorted({
             component for index in self.generation
             for component in self.deps[index]["outputs"]
@@ -355,7 +370,7 @@ class Workspace:
             "show_api": False, "zerogpu": False, "rendered_in": None,
         }
         config["dependencies"].append(pull_dependency)
-        for offset, component in enumerate(sorted(self.editable_fields), start=1):
+        for offset, component in enumerate(sorted(self.editable_fields - mobile_prompts.keys()), start=1):
             config["dependencies"].append({
                 **pull_dependency,
                 "id": pull_dependency["id"] + offset,
@@ -374,6 +389,7 @@ class Event:
     task_id: str | None
     fingerprint: str
     status: str = "queued"
+    archive_restore: object = None
     finished: float = 0
 
 
@@ -409,6 +425,20 @@ class Companion:
         self.extensions = MobileExtensions(
             HERE / "extensions", json.loads((HERE / "defaults.json").read_text(encoding="utf-8"))
         )
+
+        self.input_archive = None
+        archive = HERE / "extensions" / "parameters-saver" / "archive.py"
+        if archive.is_file():
+            spec = spec_from_file_location("forge_mobile_input_archive", archive)
+            module = module_from_spec(spec)
+            spec.loader.exec_module(module)
+            self.input_archive = module.InputArchive(self)
+
+    def browser_config(self, config, origin):
+        self.workspace.config_for(config, origin)
+        if self.input_archive:
+            self.input_archive.patch_config(config)
+        return config
 
     async def lifecycle(self, app):
         async with ClientSession(
@@ -452,6 +482,8 @@ class Companion:
         if config.get("enable_queue") is False:
             raise ValueError("Forge Mobile needs Forge's native Gradio queue enabled")
         self.workspace.configure(config)
+        if self.input_archive:
+            self.input_archive.configure(config)
 
     async def ensure_config(self, request):
         async with self.config_lock:
@@ -530,12 +562,19 @@ class Companion:
                     for (position, _), prompt in zip(slots, hires_prompts):
                         # A truthy blank keeps Forge from using the source image's text.
                         payload["data"][position] = data[position] or prompt or " "
+            archive_restore = None
+            if self.input_archive:
+                if task:
+                    payload["data"] = await self.input_archive.capture(index, payload["data"], controlnet, headers)
+                else:
+                    payload["data"], archive_restore = await self.input_archive.prepare_paste(index, data, headers)
             async with self.http.post(self.url(request), json=payload, headers=headers) as response:
                 if response.status != 200:
                     return web.Response(status=response.status, body=await response.read(),
                                         headers=self.response_headers(response, request))
                 event_id = (await response.json())["event_id"]
-            self.events[event_id] = Event(page, index, task, self.workspace.fingerprint)
+            self.events[event_id] = Event(
+                page, index, task, self.workspace.fingerprint, archive_restore=archive_restore)
             if task:
                 self.tasks[task] = event_id
                 try:
@@ -559,9 +598,13 @@ class Companion:
                 data = (message.get("output") or {}).get("data")
                 if isinstance(data, list):
                     try:
+                        if self.input_archive and event.archive_restore is not None:
+                            data = self.input_archive.apply_paste(event.index, data, event.archive_restore)
+                            message["output"]["data"] = data
                         self.workspace.complete(event.index, data)
                     except OSError:
                         logging.exception("Could not save Forge's result")
+            event.archive_restore = None
             event.status = "complete" if message.get("success") else "failed"
             event.finished = time.monotonic()
         self.pages[event.page].publish(message)
@@ -668,7 +711,7 @@ class Companion:
             return body
         self.configure(config)
         self.last_config = time.monotonic()
-        self.workspace.config_for(config, origin)
+        self.browser_config(config, origin)
         safe_config = json_bytes(config).decode().replace("<", "\\u003c")
         page = body[:match.end()] + safe_config + body[end:]
         script = (
@@ -688,33 +731,6 @@ class Companion:
             return web.FileResponse(HERE / "client-loader.js", headers={"Cache-Control": "no-store"})
         if path == PREFIX + "/state" and request.method == "GET":
             return self.state(request)
-        if path == PREFIX + "/prompt-validity" and request.method == "POST":
-            payload = await request.json()
-            prompt, text = payload.get("prompt"), payload.get("text")
-            if not isinstance(prompt, str) or not isinstance(text, str):
-                raise web.HTTPBadRequest(text="Invalid prompt")
-            await self.ensure_config(request)
-            dep = self.workspace.token_validators.get(prompt)
-            if dep is None:
-                return web.json_response({"invalid": None})
-            data = [text]
-            if len(dep["inputs"]) == 2:
-                steps = payload.get("steps")
-                data.append(steps if type(steps) is int and steps > 0 else 20)
-            api_name = quote(str(dep.get("api_name") or "predict"), safe="")
-            async with self.http.post(
-                self.url(request, "/run/" + api_name), headers=self.headers(request),
-                json={"fn_index": dep["id"], "session_hash": self.session, "data": data},
-            ) as response:
-                if response.status != 200:
-                    return web.json_response({"invalid": None})
-                value = (await response.json()).get("data") or [None]
-                value = value[0]
-                if isinstance(value, dict):
-                    value = value.get("value")
-                return web.json_response({
-                    "invalid": bool(re.search(r"\berror\b", value, re.I)) if isinstance(value, str) else None
-                })
         if path == PREFIX + "/controls":
             await self.ensure_config(request)
             if request.method == "GET":
@@ -771,11 +787,14 @@ class Companion:
         body = request.content if request.can_read_body else None
         remap = path.startswith(("/run/", "/api/")) or path in {"/cancel", "/reset", "/component_server"}
         index = None
+        archive_restore = None
         if remap and request.content_type == "application/json" and request.method == "POST":
             payload = await request.json()
             if "session_hash" in payload:
                 payload["session_hash"] = self.session
             index = payload.get("fn_index")
+            if self.input_archive and isinstance(index, int) and isinstance(payload.get("data"), list):
+                payload["data"], archive_restore = await self.input_archive.prepare_paste(index, payload["data"], headers)
             body = json_bytes(payload)
 
         url = self.url(request)
@@ -794,11 +813,13 @@ class Companion:
                 self.configure(config)
                 self.last_config = time.monotonic()
                 response_headers["Cache-Control"] = "no-store"
-                return web.Response(body=json_bytes(self.workspace.config_for(config, self.origin(request))),
+                return web.Response(body=json_bytes(self.browser_config(config, self.origin(request))),
                                     status=upstream.status, headers=response_headers)
             if index is not None and upstream.content_type == "application/json" and upstream.status == 200:
                 output = await upstream.json()
                 if isinstance(output.get("data"), list):
+                    if self.input_archive and archive_restore is not None:
+                        output["data"] = self.input_archive.apply_paste(index, output["data"], archive_restore)
                     self.workspace.restore_hires_on_load(index, output["data"])
                     self.workspace.complete(index, output["data"])
                 return web.Response(body=json_bytes(output), status=upstream.status, headers=response_headers)

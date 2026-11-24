@@ -1,6 +1,4 @@
-# Forge Mobile Client v0.3.31
-
-Temporary rollback to the v0.3.16 runtime. Git launch updates are available through the existing launcher.
+# Forge Mobile Client v0.4
 
 A standalone companion on port 7862 with the mobile workspace from the HTML preview. Start Forge normally on 7860, then run this companion from its own directory.
 
@@ -8,9 +6,27 @@ The IIB tab opens a separate instance of the installed Infinite Image Browsing f
 
 IIB must be enabled as an extension in the running Forge instance, so its frontend and native Send to controls are available through 7862. The companion uses Forge's IIB asset/API routes through its existing proxy. A separate standalone IIB service on 7861 alone does not provide Forge's native paste controls.
 
+## Trace delays on 7862
+
+In the mobile workspace, open Panels → Settings and turn on Performance logger. Look in the PC command window running the mobile companion for `[Forge Mobile trace]`. The same entries are also available in the browser console. Recording also covers the native view served on 7862. You can also start it with `?forgeTrace=1` in the mobile URL or `ForgeMobileTrace.start()` in the console.
+
+Reproduce a slow prompt edit, tab switch, or seed reuse. Compare `interaction` and `frame-delay` with `request` and `queue` records on the same timeline. Event Timing and Long Task entries appear when supported by the browser. The two-frame estimate measures a rendering opportunity, and time between received queue messages includes delivery time.
+
+Turn off Performance logger when done, or run `ForgeMobileTrace.stop()`. The toggle resets when the page reloads unless `?forgeTrace=1` is in the URL. `JSON.stringify(ForgeMobileTrace.report())` returns the last 160 records for sharing. The logger is off by default and records timing, control names, and known request routes without recording field contents or request data.
+
+## Set up Img2img Hires Fix and input archiving
+
+Forge Mobile includes Img2img Hires Fix v2.2.1 and the input metadata helper. Both run inside Forge Neo.
+
+1. Stop Forge Neo and Forge Mobile. If changing the enabled Forge extension set, export your mobile workspace first to preserve your current draft.
+2. Run `setup-forge.bat` in the Forge Mobile folder and enter the path to your Forge Neo installation. You can also pass the folder directly with `setup-forge.bat "C:\path\to\Forge Neo"`. Add `--check` to check an installation without copying files.
+3. Start Forge Neo, then start Forge Mobile with `start-mobile.bat`.
+
+Setup installs missing bundled extensions and reuses matching existing copies. If it finds duplicates or a different installed build, it reports the path. Keep a backup outside Forge's extensions folder before choosing to swap builds. Enable the installed extensions in Forge if they were disabled. For IIB, enable Infinite Image Browsing in Forge separately.
+
 ## Start on Windows
 
-1. Open the `forge-mobile` directory in your checkout.
+1. Clone the repository and open its `forge-mobile` folder. A ZIP installation also works for offline use.
 2. Start Forge Neo and wait for its normal interface to load.
 3. Stop any older companion process using 7862.
 4. Double-click start-mobile.bat.
@@ -24,9 +40,34 @@ For a different Forge address or mobile port:
 
 The default listener is available on the local network without a password. Anyone who can reach it can use the Forge session. Use your trusted network.
 
-## Update from an earlier version
+## Install Git updates
 
-Stop the companion and run `start-mobile.bat` to pull the next version. Reload the 7862 page when the companion starts.
+Install Git for Windows, then run these commands once from a folder where you keep apps.
+
+```bat
+git clone --sparse https://github.com/rin-okay/rin-projects.git
+cd rin-projects
+git sparse-checkout set forge-mobile
+forge-mobile\start-mobile.bat
+```
+
+If migrating from a ZIP, stop the old companion and copy `workspace.json`, `mobile-settings.json`, the `input-archive/` data directory if present, and your custom docks into the new `forge-mobile/` folder. Keep the old install as a backup.
+
+Each launch fetches `main` from the configured origin and applies a fast-forward update before starting the app. A download failure, wrong checkout, or local Git changes skips the update and continues with the installed copy. A non-Git installation launches normally. Run `set FORGE_SKIP_UPDATES=1` in Command Prompt before running the batch file to bypass updates in that shell.
+
+The launch log reports `Version installed (v…)` after an update or `No new version (v…)` when the checkout is current. The companion also prints its installed version at startup.
+
+## ControlNet / img2img Parameters Saver
+
+Forge Mobile includes the Parameters Saver starting with v0.3.22. Restart the companion to load the bundled copy. The bundled code lives in `extensions/parameters-saver/` so Git can update it alongside an existing manual installation at `extensions/input-archive/`.
+
+For archive capture to work, Forge Neo must load the [bundled metadata helper](forge-neo-extensions/forge-mobile-input-metadata/). The setup above installs it and recognizes the previous manual installation when the files match.
+
+Generate from Forge Mobile with a single img2img source or supported ControlNet inputs. A successful capture writes data to `input-archive/images/` and `input-archive/recipes/` beside `workspace.json`; an output with a saved recipe contains `Forge Mobile input archive: <hash>` in its metadata. IIB can use that reference to restore img2img sources and masks, plus ControlNet settings. ControlNet images are archived for reference and are excluded from automatic restore. Keep the `input-archive/` data folder when moving or upgrading an installation.
+
+## Forge Neo extension updates
+
+[Start Forge with GitHub extension updates](FORGE-EXTENSIONS.md) to select which Forge-side extensions receive updates. Forge Mobile’s own launcher continues to start the mobile companion.
 
 ## Recent fixes
 
@@ -77,7 +118,7 @@ If the native IIB extension is unavailable, the tab displays an explanation and 
 
 The mobile workspace relocates the actual Forge components and restores them on Back. Their Gradio event handlers remain responsible for generation, sampler/model selection, prompt styles, img2img uploads, inpainting, ControlNet, seed actions, and gallery operations.
 
-Generate and Hires Fix docks click the existing Forge buttons. Gallery docks select the native gallery image. Hires Fix requires the existing Forge feature or installed enhancer to provide its native button. The companion integrates the existing Img2img Hires Fix extension. Install that extension into Forge if its backend is missing. Its manual gallery action uses the current Hires Fix fields, falling back to the current regular positive and negative prompts per field. Clone regular prompt copies the corresponding regular prompt into the open Hires Fix editor.
+Generate and Hires Fix docks click the existing Forge buttons. Gallery docks select the native gallery image. Hires Fix requires the existing Forge feature or installed enhancer to provide its native button. The companion uses the bundled Img2img Hires Fix extension installed by the setup above. Its manual gallery action uses the current Hires Fix fields, falling back to the current regular positive and negative prompts per field. Clone regular prompt copies the corresponding regular prompt into the open Hires Fix editor.
 
 The LoRAs tab uses Forge's actual cards. Clicking a card uses Forge's own insertion handler. The slider stack reads and edits the resulting <lora:name:weight> prompt tags. Installed LoRA cards, previews, search, and refresh remain supplied by Forge.
 
@@ -95,7 +136,7 @@ Defaults are 85% upper-workspace scale, an unlocked Gallery dock at bottom left,
 - mobile-settings.json holds mobile layout, scaling, and dock settings.
 - defaults.json supplies initial mobile settings.
 
-Ordinary native input edits are saved through frontend Gradio events. The companion keeps consuming the generation queue while the phone disconnects. Reloading restores the captured controls and output gallery together with generation metadata.
+Forge Mobile keeps unsubmitted prompt edits in the page and saves prompt values when you submit a generation. Export Settings includes the current prompt text. Live prompt error and token checks are disabled in the mobile workspace. Other native input edits are saved through frontend Gradio events. The companion keeps consuming the generation queue while the phone disconnects. Reloading restores the captured controls and output gallery together with generation metadata.
 
 Cached images and extension-owned Python state still belong to the running Forge process. Restarting Forge can invalidate cached uploads and results. A UI/config fingerprint resets captured component state if Forge's component layout changes.
 
